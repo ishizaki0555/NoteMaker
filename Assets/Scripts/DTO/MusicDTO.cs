@@ -10,7 +10,7 @@
 
 using System.Collections.Generic;
 
-namespace NoteEditor.DTO
+namespace NoteMaker.DTO
 {
     public class MusicDTO
     {
