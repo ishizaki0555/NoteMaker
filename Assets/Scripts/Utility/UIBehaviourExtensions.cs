@@ -49,5 +49,4 @@ public static partial class UIBehaviourExtensions
         eventTrgger.triggers.RemoveAll(listener => listener.eventID == eventID);
     }
 }
-
 #endif
