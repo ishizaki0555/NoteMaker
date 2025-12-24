@@ -25,7 +25,7 @@ namespace NoteMaker.Model
         Dictionary<NotePosition, NoteObject> notes_ = new Dictionary<NotePosition, NoteObject>();   // ÉmÅ[ÉgàÍóó
 
         public static ReactiveProperty<string> Name { get { return Instance.name_; } }
-        public static ReactiveProperty<int> MaxBloak { get { return Instance.maxBloak_; } }
+        public static ReactiveProperty<int> MaxBlock { get { return Instance.maxBloak_; } }
         public static ReactiveProperty<int> LPB { get { return Instance.LPB_; } }
         public static ReactiveProperty<int> BPM { get { return Instance.BPM_; } }
         public static ReactiveProperty<int> OffsetSamples { get { return Instance.offsetSamples_; } }

@@ -13,9 +13,9 @@ using System.Collections.Generic;
 namespace NoteMaker.DTO
 {
     [System.Serializable]
-    public class SettingDTO
+    public class SettingsDTO
     {
-        public string workSpacepath;        // ワークスペースのパス
+        public string workSpacePath;        // ワークスペースのパス
         public int maxBlock;                // 最大ブロック数
         public List<int> noteInputKeyCodes; // ノート入力に使うキーコード一覧
 
@@ -23,11 +23,11 @@ namespace NoteMaker.DTO
         /// デフォルト設定を生成して返す。
         /// 設定ファイルが存在しない場合などに使用される。
         /// </summary>
-        public static SettingDTO GetDefaultSettings()
+        public static SettingsDTO GetDefaultSettings()
         {
-            return new SettingDTO
+            return new SettingsDTO
             {
-                workSpacepath = "",
+                workSpacePath = "",
                 maxBlock = 5,
                 noteInputKeyCodes = new List<int> { 114, 99, 103, 121, 98 } // デフォルトキー
             };

@@ -24,7 +24,7 @@ namespace NoteMaker.Presenter
                 .Where(_ => !KeyInput.AltKey())
                 .Where(_ => !KeyInput.CtrlKey())
                 .Where(_ => !KeyInput.ShiftKey())
-                .SelectMany(_ => Observable.Range(0, EditData.MaxBloak.Value))
+                .SelectMany(_ => Observable.Range(0, EditData.MaxBlock.Value))
                 .Where(block => Input.GetKeyDown(Settings.NoteInputKeyCodes.Value[block]))
                 .Subscribe(block => EnterNote(block));
         }

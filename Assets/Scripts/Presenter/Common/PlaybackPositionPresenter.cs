@@ -1,6 +1,5 @@
 using NoteMaker.Common;
 using NoteMaker.Model;
-using NoteMaker.Presenter;
 using NoteMaker.Utility;
 using System;
 using System.Linq;
@@ -13,12 +12,9 @@ namespace NoteMaker.Presenter
 {
     public class PlaybackPositionPresenter : MonoBehaviour
     {
-        [SerializeField]
-        CanvasEvents canvasEvents = default;
-        [SerializeField]
-        Slider playbackPositionController = default;
-        [SerializeField]
-        Text playbackTimeDisplayText = default;
+        [SerializeField] CanvasEvents canvasEvents = default;
+        [SerializeField] Slider playbackPositionController = default;
+        [SerializeField] Text playbackTimeDisplayText = default;
 
         void Awake()
         {

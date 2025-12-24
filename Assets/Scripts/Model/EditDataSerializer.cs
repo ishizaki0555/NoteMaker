@@ -23,11 +23,11 @@ namespace NoteMaker.Model
         /// <summary>
         /// 現在の EditData を MusicDTO.EditData に変換し、JSON 文字列として返す。
         /// </summary>
-        public static string Seralize()
+        public static string Serialize()
         {
             var dto = new MusicDTO.EditData();
             dto.BPM = EditData.BPM.Value;
-            dto.maxNum = EditData.MaxBloak.Value;
+            dto.maxNum = EditData.MaxBlock.Value;
             dto.offset = EditData.OffsetSamples.Value;
             dto.songName = Path.GetFileNameWithoutExtension(EditData.Name.Value);
 
@@ -76,7 +76,7 @@ namespace NoteMaker.Model
             var notePresenter = EditNotesPresenter.Instance;
 
             EditData.BPM.Value = editData.BPM;
-            EditData.MaxBloak.Value = editData.maxNum;
+            EditData.MaxBlock.Value = editData.maxNum;
             EditData.OffsetSamples.Value = editData.offset;
 
             // すべてのノートデータを復元する
