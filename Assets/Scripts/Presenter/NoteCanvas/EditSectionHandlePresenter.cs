@@ -69,7 +69,7 @@ namespace NoteMaker.Presenter
 
             Observable.Merge(
                     CurrentSamples.AsUnitObservable(),
-                    NoteCanvas.OffsetX.AsUnitObservable(),
+                    NoteCanvas.OffsetY.AsUnitObservable(),
                     Audio.SmoothedTimeSamples.AsUnitObservable(),
                     NoteCanvas.Width.AsUnitObservable(),
                     EditData.OffsetSamples.AsUnitObservable())

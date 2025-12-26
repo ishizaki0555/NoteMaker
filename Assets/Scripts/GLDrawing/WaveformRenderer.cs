@@ -13,7 +13,7 @@ namespace NoteMaker.GLDrawing
 
         Texture2D texture;
 
-        int imageWidth = 1280;
+        int imageHeight = 1080;
         float[] samples = new float[500000];
 
         float cachedCanvasWidth = 0;
@@ -21,7 +21,7 @@ namespace NoteMaker.GLDrawing
 
         void Start()
         {
-            texture = new Texture2D(imageWidth, 1);
+            texture = new Texture2D(1, imageHeight);
             image.texture = texture;
             ResetTexture();
 
@@ -44,19 +44,19 @@ namespace NoteMaker.GLDrawing
 
             Audio.Source.clip.GetData(samples, Mathf.RoundToInt(timeSamples));
 
-            int textureX = 0;
+            int textureY = 0;
             float maxSample = 0;
             int skipSamples = Mathf.RoundToInt(1 / (NoteCanvas.Width.Value * 0.5f / Audio.Source.clip.samples));
 
-            for (int i = 0, l = samples.Length; textureX < imageWidth && i < l; i++)
+            for (int i = 0, l = samples.Length; textureY < imageHeight && i < l; i++)
             {
                 maxSample = Mathf.Max(maxSample, samples[i]);
 
                 if (i % skipSamples == 0)
                 {
-                    texture.SetPixel(textureX, 0, new Color(maxSample, 0, 0));
+                    texture.SetPixel(0, textureY, new Color(maxSample, 0, 0));
                     maxSample = 0;
-                    textureX++;
+                    textureY++;
                 }
             }
 
@@ -65,7 +65,7 @@ namespace NoteMaker.GLDrawing
 
         void ResetTexture()
         {
-            texture.SetPixels(Enumerable.Range(0, imageWidth).Select(_ => Color.clear).ToArray());
+            texture.SetPixels(Enumerable.Range(0, imageHeight).Select(_ => Color.clear).ToArray());
             texture.Apply();
         }
 

@@ -20,7 +20,7 @@ namespace NoteMaker.Utility
 
             return (samples - Audio.SmoothedTimeSamples.Value + EditData.OffsetSamples.Value)
                 * NoteCanvas.Width.Value / Audio.Source.clip.samples
-                + NoteCanvas.OffsetX.Value;
+                + NoteCanvas.OffsetY.Value;
         }
 
         public static float BlockNumToCanvasPositionY(int blockNum)

@@ -36,6 +36,7 @@ namespace NoteMaker.Presenter
             redoButton.OnClickAsObservable().Subscribe(_ => ChangeLocationCommandManager.Redo());
 
             Settings.WorkSpacePath
+                .Where(path => !string.IsNullOrEmpty(path))
                 .Subscribe(workSpacePath => directoryPathInputField.text = Path.Combine(workSpacePath, "Musics"));
 
             directoryPathInputField.OnValueChangedAsObservable()
