@@ -1,14 +1,4 @@
-// ========================================
-//
-// GLLineDrawer.cs
-//
-// ========================================
-//
-// GL ‚ğg‚Á‚Äƒ‰ƒCƒ“‚ğ•`‰æ‚·‚é‚½‚ß‚Ìƒv[ƒ‹ŠÇ—•t‚«ƒŒƒ“ƒ_ƒ‰[
-//
-// ========================================
-
-using NoteMaker.Utility;
+ï»¿using NoteMaker.Utility;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,17 +6,12 @@ namespace NoteMaker.GLDrawing
 {
     public class GLLineDrawer : SingletonMonoBehaviour<GLLineDrawer>
     {
-        [SerializeField]
-        Material mat = default;                 // •`‰æ‚Ég—p‚·‚éƒ}ƒeƒŠƒAƒ‹
+        [SerializeField] Material mat = default;
+        List<Line> drawData = new List<Line>();
 
-        List<Line> drawData = new List<Line>(); // •`‰æƒ‰ƒCƒ“‚Ìƒv[ƒ‹
+        static int size = 0;
+        static int maxSize = 0;
 
-        static int size = 0;                    // ¡ƒtƒŒ[ƒ€‚Åg—p‚·‚éƒ‰ƒCƒ“”
-        static int maxSize = 0;                 // ƒv[ƒ‹‚ÌÅ‘åƒTƒCƒY
-
-        /// <summary>
-        /// GL •`‰æƒCƒxƒ“ƒgB“o˜^‚³‚ê‚½ƒ‰ƒCƒ“‚ğ‚·‚×‚Ä•`‰æ‚·‚éB
-        /// </summary>
         void OnRenderObject()
         {
             GL.PushMatrix();
@@ -34,14 +19,12 @@ namespace NoteMaker.GLDrawing
             GL.LoadPixelMatrix();
             GL.Begin(GL.LINES);
 
-            // ƒv[ƒ‹‚ª‰ßè‚É‘å‚«‚¢ê‡‚Ík¬‚·‚é
             if (size * 2 < maxSize)
             {
                 drawData.RemoveRange(size, maxSize - size);
                 maxSize = size;
             }
 
-            // ¡ƒtƒŒ[ƒ€‚Å“o˜^‚³‚ê‚½ƒ‰ƒCƒ“‚ğ‚·‚×‚Ä•`‰æ‚·‚é
             for (int i = 0; i < size; i++)
             {
                 var line = drawData[i];
@@ -52,35 +35,25 @@ namespace NoteMaker.GLDrawing
 
             GL.End();
             GL.PopMatrix();
-
             size = 0;
         }
 
-        /// <summary>
-        /// •¡”‚Ìƒ‰ƒCƒ“‚ğ•`‰æƒLƒ…[‚É’Ç‰Á‚·‚éB
-        /// </summary>
         public static void Draw(Line[] lines)
         {
-            // ”z—ñ“à‚Ì‚·‚×‚Ä‚Ìƒ‰ƒCƒ“‚ğ‡‚É’Ç‰Á‚·‚é
             foreach (var line in lines)
             {
                 Draw(line);
             }
         }
 
-        /// <summary>
-        /// ’Pˆê‚Ìƒ‰ƒCƒ“‚ğ•`‰æƒLƒ…[‚É’Ç‰Á‚·‚éB
-        /// </summary>
         public static void Draw(Line line)
         {
-            // Šù‘¶ƒv[ƒ‹‚É‹ó‚«‚ª‚ ‚éê‡‚Íã‘‚«
             if (size < maxSize)
             {
                 Instance.drawData[size] = line;
             }
             else
             {
-                // ‹ó‚«‚ª‚È‚¢ê‡‚ÍV‹K’Ç‰Á
                 Instance.drawData.Add(line);
                 maxSize++;
             }

@@ -1,4 +1,4 @@
-using NoteMaker.Model;
+﻿using NoteMaker.Model;
 using UniRx;
 
 namespace NoteMaker.Presenter

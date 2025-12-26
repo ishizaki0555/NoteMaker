@@ -1,26 +1,12 @@
-// ========================================
-//
-// CommandManager.cs
-//
-// ========================================
-//
-// ƒRƒ}ƒ“ƒh‚ÌÀsEæ‚èÁ‚µE‚â‚è’¼‚µ‚ğŠÇ—‚·‚éƒNƒ‰ƒX
-//
-// ========================================
-
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 
 namespace NoteMaker.Common
 {
     public class CommandManager
     {
-        Stack<Command> undoStack = new Stack<Command>(); // Undo —pƒXƒ^ƒbƒN
-        Stack<Command> redoStack = new Stack<Command>(); // Redo —pƒXƒ^ƒbƒN
+        Stack<Command> undoStack = new Stack<Command>();
+        Stack<Command> redoStack = new Stack<Command>();
 
-        /// <summary>
-        /// ƒRƒ}ƒ“ƒh‚ğÀs‚µAUndo ƒXƒ^ƒbƒN‚ÉÏ‚ŞB
-        /// V‚µ‚¢‘€ì‚ªs‚í‚ê‚½‚½‚ß Redo ƒXƒ^ƒbƒN‚ÍƒNƒŠƒA‚³‚ê‚éB
-        /// </summary>
         public void Do(Command command)
         {
             command.Do();
@@ -28,18 +14,12 @@ namespace NoteMaker.Common
             redoStack.Clear();
         }
 
-        /// <summary>
-        /// Undo / Redo ‚Ì—š—ğ‚ğ‚·‚×‚ÄƒNƒŠƒA‚·‚éB
-        /// </summary>
-        public void Crear()
+        public void Clear()
         {
             undoStack.Clear();
             redoStack.Clear();
         }
 
-        /// <summary>
-        /// ’¼‘O‚Ì‘€ì‚ğæ‚èÁ‚µARedo ƒXƒ^ƒbƒN‚ÉˆÚ“®‚·‚éB
-        /// </summary>
         public void Undo()
         {
             if (undoStack.Count == 0)
@@ -50,30 +30,21 @@ namespace NoteMaker.Common
             redoStack.Push(command);
         }
 
-        /// <summary>
-        /// Undo ‚µ‚½‘€ì‚ğ‚â‚è’¼‚·B
-        /// </summary>
         public void Redo()
         {
-            if (undoStack.Count == 0) // ¦ Œ³ƒR[ƒh‚Ì‚Ü‚Ü
+            if (redoStack.Count == 0)
                 return;
 
             var command = redoStack.Pop();
             command.Redo();
-            redoStack.Push(command); // ¦ Œ³ƒR[ƒh‚Ì‚Ü‚Ü
+            undoStack.Push(command);
         }
 
-        /// <summary>
-        /// Undo ‚ª‰Â”\‚©‚Ç‚¤‚©‚ğ•Ô‚·B
-        /// </summary>
         public bool CanUndo()
         {
             return undoStack.Count > 0;
         }
 
-        /// <summary>
-        /// Redo ‚ª‰Â”\‚©‚Ç‚¤‚©‚ğ•Ô‚·B
-        /// </summary>
         public bool CanRedo()
         {
             return redoStack.Count > 0;

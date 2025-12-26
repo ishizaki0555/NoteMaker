@@ -1,14 +1,4 @@
-// ========================================
-// 
-// NoteType.cs
-// 
-// ========================================
-// 
-// ƒm[ƒc‚Ìí—Ş‚ğ’è‹`‚µ‚Ü‚·
-// 
-// ========================================
-
-namespace NoteMaker.Notes
+ï»¿namespace NoteMaker.Notes
 {
     public enum NoteTypes { Single, Long }
 }

@@ -1,14 +1,4 @@
-// ========================================
-//
-// EditState.cs
-//
-// ========================================
-//
-// •ˆ–Ê•ÒW‚Ìó‘Ôiƒm[ƒgí•ÊEƒƒ“ƒOƒm[ƒg‚Ì––”öˆÊ’u‚È‚Çj‚ğ•Û‚·‚éƒVƒ“ƒOƒ‹ƒgƒ“
-//
-// ========================================
-
-using NoteMaker.Notes;
+ï»¿using NoteMaker.Notes;
 using NoteMaker.Utility;
 using UniRx;
 
@@ -16,32 +6,12 @@ namespace NoteMaker.Model
 {
     public class EditState : SingletonMonoBehaviour<EditState>
     {
-        ReactiveProperty<bool> isOperatingPlaybackPositionDuringPlay_ = new ReactiveProperty<bool>(false); // Ä¶’†‚ÉÄ¶ˆÊ’u‚ğ‘€ì‚µ‚Ä‚¢‚é‚©
-        ReactiveProperty<NoteTypes> noteType_ = new ReactiveProperty<NoteTypes>(NoteTypes.Single);         // Œ»İ‘I‘ğ’†‚Ìƒm[ƒgí•Ê
-        ReactiveProperty<NotePosition> longNoteTailPosition_ = new ReactiveProperty<NotePosition>();       // ƒƒ“ƒOƒm[ƒg‚Ì––”öˆÊ’u
+        ReactiveProperty<bool> isOperatingPlaybackPositionDuringPlay_ = new ReactiveProperty<bool>(false);
+        ReactiveProperty<NoteTypes> noteType_ = new ReactiveProperty<NoteTypes>(NoteTypes.Single);
+        ReactiveProperty<NotePosition> longNoteTailPosition_ = new ReactiveProperty<NotePosition>();
 
-        /// <summary>
-        /// Ä¶’†‚ÉÄ¶ˆÊ’u‚ğ‘€ì‚µ‚Ä‚¢‚é‚©‚Ç‚¤‚©
-        /// </summary>
-        public static ReactiveProperty<bool> IsOperatingPlaybackPositionDuringPlay
-        {
-            get { return Instance.isOperatingPlaybackPositionDuringPlay_; }
-        }
-
-        /// <summary>
-        /// Œ»İ‘I‘ğ‚³‚ê‚Ä‚¢‚éƒm[ƒgí•Ê
-        /// </summary>
-        public static ReactiveProperty<NoteTypes> NoteType
-        {
-            get { return Instance.noteType_; }
-        }
-
-        /// <summary>
-        /// ƒƒ“ƒOƒm[ƒg‚Ì––”öˆÊ’u
-        /// </summary>
-        public static ReactiveProperty<NotePosition> LongNoteTailPosition
-        {
-            get { return Instance.longNoteTailPosition_; }
-        }
+        public static ReactiveProperty<bool> IsOperatingPlaybackPositionDuringPlay { get { return Instance.isOperatingPlaybackPositionDuringPlay_; } }
+        public static ReactiveProperty<NoteTypes> NoteType { get { return Instance.noteType_; } }
+        public static ReactiveProperty<NotePosition> LongNoteTailPosition { get { return Instance.longNoteTailPosition_; } }
     }
 }

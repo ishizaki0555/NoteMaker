@@ -1,17 +1,6 @@
-// ========================================
-//
-// EditDataSerializer.cs
-//
-// ========================================
-//
-// EditData ‚Æ MusicDTO ‚Ì‘ŠŒİ•ÏŠ·i•Û‘¶E“Ç‚İ‚İj‚ğs‚¤ƒNƒ‰ƒX
-//
-// ========================================
-
-using NoteMaker.DTO;
+ï»¿using NoteMaker.DTO;
 using NoteMaker.Notes;
 using NoteMaker.Presenter;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,39 +9,31 @@ namespace NoteMaker.Model
 {
     public class EditDataSerializer
     {
-        /// <summary>
-        /// Œ»İ‚Ì EditData ‚ğ MusicDTO.EditData ‚É•ÏŠ·‚µAJSON •¶š—ñ‚Æ‚µ‚Ä•Ô‚·B
-        /// </summary>
         public static string Serialize()
         {
             var dto = new MusicDTO.EditData();
             dto.BPM = EditData.BPM.Value;
-            dto.maxNum = EditData.MaxBlock.Value;
+            dto.maxBlock = EditData.MaxBlock.Value;
             dto.offset = EditData.OffsetSamples.Value;
-            dto.songName = Path.GetFileNameWithoutExtension(EditData.Name.Value);
+            dto.name = Path.GetFileNameWithoutExtension(EditData.Name.Value);
 
-            // ƒƒ“ƒOƒm[ƒg‚Ìæ“ª‚¾‚¯‚ğ’Šo‚µAŠÔ‡‚É•À‚×‚é
             var sortedNoteObjects = EditData.Notes.Values
                 .Where(note => !(note.note.type == NoteTypes.Long && EditData.Notes.ContainsKey(note.note.prev)))
                 .OrderBy(note => note.note.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value));
 
             dto.notes = new List<MusicDTO.Note>();
 
-            // ‚·‚×‚Ä‚Ìƒm[ƒg‚ğ DTO ‚É•ÏŠ·‚µ‚Ä’Ç‰Á‚·‚é
-            foreach (var noteObjct in sortedNoteObjects)
+            foreach (var noteObject in sortedNoteObjects)
             {
-                // ’Pƒm[ƒg‚Ìê‡‚Í‚»‚Ì‚Ü‚Ü’Ç‰Á
-                if (noteObjct.note.type == NoteTypes.Single)
+                if (noteObject.note.type == NoteTypes.Single)
                 {
-                    dto.notes.Add(ToDTO(noteObjct));
+                    dto.notes.Add(ToDTO(noteObject));
                 }
-                // ƒƒ“ƒOƒm[ƒg‚Ìê‡‚Íƒ`ƒF[ƒ“‚ğ’H‚Á‚Ä‚Ü‚Æ‚ß‚é
-                else if (noteObjct.note.type == NoteTypes.Long)
+                else if (noteObject.note.type == NoteTypes.Long)
                 {
-                    var current = noteObjct;
-                    var note = ToDTO(noteObjct);
+                    var current = noteObject;
+                    var note = ToDTO(noteObject);
 
-                    // ƒƒ“ƒOƒm[ƒg‚ÌŸ‚Ìƒm[ƒg‚ğ‡‚É’H‚Á‚Ä’Ç‰Á‚·‚é
                     while (EditData.Notes.ContainsKey(current.note.next))
                     {
                         var nextObj = EditData.Notes[current.note.next];
@@ -64,41 +45,35 @@ namespace NoteMaker.Model
                 }
             }
 
-            return UnityEngine.JsonUtility.ToJson(dto, true);
+            return UnityEngine.JsonUtility.ToJson(dto);
         }
 
-        /// <summary>
-        /// JSON •¶š—ñ‚ğ MusicDTO.EditData ‚Æ‚µ‚Ä“Ç‚İ‚İAEditData ‚É”½‰f‚·‚éB
-        /// </summary>
         public static void Deserialize(string json)
         {
             var editData = UnityEngine.JsonUtility.FromJson<MusicDTO.EditData>(json);
             var notePresenter = EditNotesPresenter.Instance;
 
             EditData.BPM.Value = editData.BPM;
-            EditData.MaxBlock.Value = editData.maxNum;
+            EditData.MaxBlock.Value = editData.maxBlock;
             EditData.OffsetSamples.Value = editData.offset;
 
-            // ‚·‚×‚Ä‚Ìƒm[ƒgƒf[ƒ^‚ğ•œŒ³‚·‚é
             foreach (var note in editData.notes)
             {
-                // ’Pƒm[ƒg‚Ìê‡‚Í‚»‚Ì‚Ü‚Ü’Ç‰Á
                 if (note.type == 1)
                 {
-                    notePresenter.AddNote(ToNotesobject(note));
+                    notePresenter.AddNote(ToNoteObject(note));
                     continue;
                 }
 
-                // ƒƒ“ƒOƒm[ƒg‚Ìê‡‚Íƒ`ƒF[ƒ“‚ğ‚Ü‚Æ‚ß‚Ä’Ç‰Á‚·‚é
                 var longNoteObjects = new[] { note }.Concat(note.notes)
                     .Select(note_ =>
                     {
-                        notePresenter.AddNote(ToNotesobject(note_));
-                        return EditData.Notes[ToNotesobject(note_).position];
-                    }).ToList();
+                        notePresenter.AddNote(ToNoteObject(note_));
+                        return EditData.Notes[ToNoteObject(note_).position];
+                    })
+                    .ToList();
 
-                // ƒƒ“ƒOƒm[ƒg‚Ì prev / next ‚ğŒq‚¬’¼‚·
-                for (int i = 0; i < longNoteObjects.Count; i++)
+                for (int i = 1; i < longNoteObjects.Count; i++)
                 {
                     longNoteObjects[i].note.prev = longNoteObjects[i - 1].note.position;
                     longNoteObjects[i - 1].note.next = longNoteObjects[i].note.position;
@@ -108,9 +83,6 @@ namespace NoteMaker.Model
             }
         }
 
-        /// <summary>
-        /// NoteObject ‚ğ MusicDTO.Note ‚É•ÏŠ·‚·‚éB
-        /// </summary>
         static MusicDTO.Note ToDTO(NoteObject noteObject)
         {
             var note = new MusicDTO.Note();
@@ -122,10 +94,7 @@ namespace NoteMaker.Model
             return note;
         }
 
-        /// <summary>
-        /// MusicDTO.Note ‚ğ Note ‚É•ÏŠ·‚·‚éB
-        /// </summary>
-        public static Note ToNotesobject(MusicDTO.Note musicNote)
+        public static Note ToNoteObject(MusicDTO.Note musicNote)
         {
             return new Note(
                 new NotePosition(musicNote.LPB, musicNote.num, musicNote.block),

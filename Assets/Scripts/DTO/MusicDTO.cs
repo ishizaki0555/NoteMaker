@@ -1,14 +1,4 @@
-// ========================================
-// 
-// MusicDTO.cs
-// 
-// ========================================
-// 
-// json‚É•Û‘¶‚·‚éƒm[ƒcƒf[ƒ^‚ÌŒ^
-// 
-// ========================================
-
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 
 namespace NoteMaker.DTO
 {
@@ -17,21 +7,21 @@ namespace NoteMaker.DTO
         [System.Serializable]
         public class EditData
         {
-            public string songName;     // ‹È–¼
-            public int maxNum;          // ƒŒ[ƒ“”
-            public int BPM;             // BPM
-            public int offset;          // ƒm[ƒcˆêŒÂˆêŒÂ‚ÌŠÔŠu
-            public List<Note> notes;    // ƒm[ƒc
+            public string name;
+            public int maxBlock;
+            public int BPM;
+            public int offset;
+            public List<Note> notes;
         }
 
         [System.Serializable]
         public class Note
         {
-            public int LPB;             // ’u‚­ŠÔ
-            public int num;             // ƒm[ƒcŒÂ•Ê‚ÉŠ„‚èU‚ç‚ê‚é˜A”Ô
-            public int block;           // ƒuƒƒbƒN
-            public int type;            // ‚Ç‚Ìƒm[ƒc‚©
-            public List <Note> notes;   // ƒm[ƒc
+            public int LPB;
+            public int num;
+            public int block;
+            public int type;
+            public List<Note> notes;
         }
     }
 }

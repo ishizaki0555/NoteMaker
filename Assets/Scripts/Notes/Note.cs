@@ -1,25 +1,12 @@
-// ========================================
-//
-// Note.cs
-//
-// ========================================
-//
-// ƒm[ƒgî•ñ‚ğ•Û‚·‚éƒNƒ‰ƒX
-//
-// ========================================
-
-namespace NoteMaker.Notes
+ï»¿namespace NoteMaker.Notes
 {
     public class Note
     {
-        public NotePosition position = NotePosition.None; // ƒm[ƒg‚ÌˆÊ’u
-        public NoteTypes type = NoteTypes.Single;         // ƒm[ƒg‚Ìí—Şi’Pƒm[ƒg / ƒƒ“ƒOj
-        public NotePosition next = NotePosition.None;     // ƒƒ“ƒOƒm[ƒg‚ÌŸ‚ÌˆÊ’u
-        public NotePosition prev = NotePosition.None;     // ƒƒ“ƒOƒm[ƒg‚Ì‘O‚ÌˆÊ’u
+        public NotePosition position = NotePosition.None;
+        public NoteTypes type = NoteTypes.Single;
+        public NotePosition next = NotePosition.None;
+        public NotePosition prev = NotePosition.None;
 
-        /// <summary>
-        /// ˆÊ’uEí—ŞE‘OŒãŠÖŒW‚ğw’è‚µ‚Äƒm[ƒg‚ğ¶¬‚·‚éB
-        /// </summary>
         public Note(NotePosition position, NoteTypes type, NotePosition next, NotePosition prev)
         {
             this.position = position;
@@ -28,26 +15,17 @@ namespace NoteMaker.Notes
             this.prev = prev;
         }
 
-        /// <summary>
-        /// ˆÊ’u‚Æí—Ş‚ğw’è‚µ‚Äƒm[ƒg‚ğ¶¬‚·‚éB
-        /// </summary>
         public Note(NotePosition position, NoteTypes type)
         {
             this.position = position;
             this.type = type;
         }
 
-        /// <summary>
-        /// ˆÊ’u‚Ì‚İw’è‚µ‚Äƒm[ƒg‚ğ¶¬‚·‚éB
-        /// </summary>
         public Note(NotePosition position)
         {
             this.position = position;
         }
 
-        /// <summary>
-        /// •Ê‚Ìƒm[ƒg‚ğƒRƒs[‚µ‚Ä¶¬‚·‚éB
-        /// </summary>
         public Note(Note note)
         {
             this.position = note.position;
@@ -56,17 +34,11 @@ namespace NoteMaker.Notes
             this.prev = note.prev;
         }
 
-        /// <summary>
-        /// ƒfƒtƒHƒ‹ƒgƒRƒ“ƒXƒgƒ‰ƒNƒ^B
-        /// </summary>
         public Note() { }
 
-        /// <summary>
-        /// ƒm[ƒg“¯m‚ª“¯‚¶“à—e‚©‚Ç‚¤‚©‚ğ”äŠr‚·‚éB
-        /// </summary>
+
         public override bool Equals(object obj)
         {
-            // Œ^‚ªˆá‚¤A‚Ü‚½‚Í null ‚Ìê‡‚Íˆê’v‚µ‚È‚¢
             if (obj == null || GetType() != obj.GetType())
             {
                 return false;
@@ -74,11 +46,15 @@ namespace NoteMaker.Notes
 
             var c = (Note)obj;
 
-            // ˆÊ’uEí—ŞE‘OŒãŠÖŒW‚ª‚·‚×‚Äˆê’v‚µ‚Ä‚¢‚é‚©”»’è
             return position.Equals(c.position) &&
-                   type == c.type &&
-                   next.Equals(c.next) &&
-                   prev.Equals(c.prev);
+                type == c.type &&
+                next.Equals(c.next) &&
+                prev.Equals(c.prev);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
     }
 }

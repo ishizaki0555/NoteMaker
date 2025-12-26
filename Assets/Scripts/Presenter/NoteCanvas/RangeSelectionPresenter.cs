@@ -1,26 +1,7 @@
-// ========================================
-//
-// RangeSelectionPresenter.cs
-//
-// ========================================
-//
-// ƒm[ƒg‚Ì”ÍˆÍ‘I‘ğEƒRƒs[EƒJƒbƒgEƒy[ƒXƒgEíœ‚ğŠÇ—‚·‚é PresenterB
-// Eƒhƒ‰ƒbƒO‚É‚æ‚é‹éŒ`‘I‘ğ
-// ECtrl+A ‘S‘I‘ğ
-// ECtrl+C ƒRƒs[
-// ECtrl+X ƒJƒbƒg
-// ECtrl+V ƒy[ƒXƒg
-// EDelete / Backspace íœ
-// EƒNƒŠƒbƒN‚É‚æ‚é‘I‘ğ‰ğœ
-//
-// GLLineDrawer ‚ğ—p‚¢‚Ä‘I‘ğ‹éŒ`‚ğ•`‰æ‚·‚éB
-//
-// ========================================
-
-using NoteMaker.Model;
+ï»¿using NoteMaker.GLDrawing;
 using NoteMaker.Notes;
+using NoteMaker.Model;
 using NoteMaker.Utility;
-using NoteMaker.GLDrawing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,58 +13,50 @@ namespace NoteMaker.Presenter
 {
     public class RangeSelectionPresenter : MonoBehaviour
     {
-        [SerializeField] Color selectionRectColor = default; // ‘I‘ğ‹éŒ`‚ÌF
+        [SerializeField]
+        Color selectionRectColor = default;
 
-        Dictionary<NotePosition, NoteObject> selectedNoteObjects = new Dictionary<NotePosition, NoteObject>(); // ‘I‘ğ’†ƒm[ƒg
-        List<Note> copiedNotes = new List<Note>(); // ƒRƒs[Ï‚İƒm[ƒg
+        Dictionary<NotePosition, NoteObject> selectedNoteObjects = new Dictionary<NotePosition, NoteObject>();
+        List<Note> copiedNotes = new List<Note>();
         EditNotesPresenter editPresenter;
 
-        /// <summary>
-        /// ƒRƒ“ƒ|[ƒlƒ“ƒg¶¬’¼Œã‚ÉŒÄ‚Î‚ê‚é‰Šú‰»ˆ—B
-        /// ƒm[ƒg•ÒW Presenter ‚ÌQÆæ“¾‚ÆA‘I‘ğŒnƒCƒxƒ“ƒg‚ÌƒZƒbƒgƒAƒbƒv‚ğs‚¤B
-        /// </summary>
         void Awake()
         {
             editPresenter = EditNotesPresenter.Instance;
 
-            // ----------------------------------------
-            // ƒhƒ‰ƒbƒO‚É‚æ‚é”ÍˆÍ‘I‘ğ
-            // ----------------------------------------
+
+            // Select by dragging
             this.UpdateAsObservable()
                 .Where(_ => KeyInput.CtrlKey())
                 .Where(_ => Input.GetMouseButtonDown(0))
                 .Select(_ => Input.mousePosition)
-                .SelectMany(startPos =>
-                    this.UpdateAsObservable()
-                        .TakeWhile(_ => !Input.GetMouseButtonUp(0))
-                        .Where(_ => NoteCanvas.IsMouseOverNotesRegion.Value)
-                        .Select(_ => Input.mousePosition)
-                        .Select(currentPos => new Rect(startPos, currentPos - startPos)))
+                .SelectMany(startPos => this.UpdateAsObservable()
+                    .TakeWhile(_ => !Input.GetMouseButtonUp(0))
+                    .Where(_ => NoteCanvas.IsMouseOverNotesRegion.Value)
+                    .Select(_ => Input.mousePosition)
+                    .Select(currentPos => new Rect(startPos, currentPos - startPos)))
                 .Do(rect => GLLineDrawer.Draw(ToLines(rect, selectionRectColor)))
                 .Do(_ => { if (!Audio.IsPlaying.Value) Deselect(); })
                 .SelectMany(rect => GetNotesWithin(rect))
                 .Do(kv => selectedNoteObjects[kv.Key] = kv.Value)
                 .Subscribe(kv => kv.Value.isSelected.Value = true);
 
-            // ----------------------------------------
-            // Ctrl+A ‘S‘I‘ğ
-            // ----------------------------------------
+
+            // All select by Ctrl-A
             this.UpdateAsObservable()
                 .Where(_ => KeyInput.CtrlPlus(KeyCode.A))
                 .SelectMany(_ => EditData.Notes.Values.ToList())
                 .Do(noteObj => noteObj.isSelected.Value = true)
                 .Subscribe(noteObj => selectedNoteObjects[noteObj.note.position] = noteObj);
 
-            // ----------------------------------------
-            // Ctrl+C ƒRƒs[
-            // ----------------------------------------
+
+            // Copy notes by Ctrl-C
             this.UpdateAsObservable()
                 .Where(_ => KeyInput.CtrlPlus(KeyCode.C))
-                .Subscribe(_ => CopyNotes(selectedNoteObjects.Values));
+                .Subscribe(notes => CopyNotes(selectedNoteObjects.Values));
 
-            // ----------------------------------------
-            // Ctrl+X ƒJƒbƒgiƒRƒs[ ¨ íœj
-            // ----------------------------------------
+
+            // Cutting notes by Ctrl-X
             this.UpdateAsObservable()
                 .Where(_ => KeyInput.CtrlPlus(KeyCode.X))
                 .Select(_ => selectedNoteObjects.Values
@@ -91,17 +64,15 @@ namespace NoteMaker.Presenter
                 .Do(notes => CopyNotes(notes))
                 .Subscribe(notes => DeleteNotes(notes));
 
-            // ----------------------------------------
-            // ¶ƒNƒŠƒbƒN‚Å‘I‘ğ‰ğœi”gŒ`—ÌˆæˆÈŠOj
-            // ----------------------------------------
+
+            // Deselect by mousedown
             this.UpdateAsObservable()
                 .Where(_ => !NoteCanvas.IsMouseOverWaveformRegion.Value)
                 .Where(_ => Input.GetMouseButtonDown(0))
                 .Subscribe(_ => Deselect());
 
-            // ----------------------------------------
-            // Delete / Backspace ‚Åíœ
-            // ----------------------------------------
+
+            // Delete selected notes by delete key
             this.UpdateAsObservable()
                 .Where(_ => Input.GetKeyDown(KeyCode.Delete) || Input.GetKeyDown(KeyCode.Backspace))
                 .Select(_ => selectedNoteObjects.Values
@@ -109,31 +80,23 @@ namespace NoteMaker.Presenter
                 .Do(_ => selectedNoteObjects.Clear())
                 .Subscribe(notes => DeleteNotes(notes));
 
-            // ----------------------------------------
-            // Ctrl+V ƒy[ƒXƒgiŸ‚Ìƒr[ƒg‚Öj
-            // ----------------------------------------
+
+            // Paste to next beat by Ctrl-V
             this.UpdateAsObservable()
                 .Where(_ => KeyInput.CtrlPlus(KeyCode.V))
                 .Where(_ => copiedNotes.Count > 0)
-                .Select(_ => copiedNotes.OrderBy(note =>
-                    note.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value)))
+                .Select(_ => copiedNotes.OrderBy(note => note.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value)))
                 .Subscribe(sortedCopiedNotes =>
                 {
                     var firstPos = sortedCopiedNotes.First().position;
                     var lastPos = sortedCopiedNotes.Last().position;
                     var beatDiff = 1 + lastPos.num / lastPos.LPB - firstPos.num / firstPos.LPB;
 
-                    // “\‚è•t‚¯Œã‚É‰¹Œ¹”ÍˆÍŠO‚Öo‚È‚¢ƒm[ƒg‚Ì‚İÌ—p
-                    var validNotes = copiedNotes
-                        .Where(note =>
-                            note.position.Add(0, note.position.LPB * beatDiff, 0)
-                                .ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value)
-                            < Audio.Source.clip.samples)
+                    var validNotes = copiedNotes.Where(note => note.position.Add(0, note.position.LPB * beatDiff, 0).ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value) < Audio.Source.clip.samples)
                         .ToList();
 
                     copiedNotes.Clear();
 
-                    // ƒm[ƒg¶¬ & ’Ç‰Á
                     validNotes.ToObservable()
                         .Select(note =>
                             note.type == NoteTypes.Single
@@ -142,7 +105,8 @@ namespace NoteMaker.Presenter
                                     note.position.Add(0, note.position.LPB * beatDiff, 0),
                                     note.type,
                                     note.next.Add(0, note.next.LPB * beatDiff, 0),
-                                    note.prev.Add(0, note.prev.LPB * beatDiff, 0)))
+                                    note.prev.Add(0, note.prev.LPB * beatDiff, 0)
+                                ))
                         .Do(note => copiedNotes.Add(note))
                         .Subscribe(note =>
                             (EditData.Notes.ContainsKey(note.position)
@@ -150,10 +114,8 @@ namespace NoteMaker.Presenter
                                 : editPresenter.RequestForAddNote)
                             .OnNext(note));
 
-                    // ‘I‘ğ‰ğœ
                     Deselect();
 
-                    // “\‚è•t‚¯‚½ƒm[ƒg‚ğ‘I‘ğó‘Ô‚É‚·‚é
                     validNotes.Select(obj => obj.position.Add(0, obj.position.LPB * beatDiff, 0))
                         .ToObservable()
                         .DelayFrame(1)
@@ -163,9 +125,6 @@ namespace NoteMaker.Presenter
                 });
         }
 
-        /// <summary>
-        /// ƒƒ“ƒOƒm[ƒg‚ÌŸ‚Ì‘I‘ğƒm[ƒg‚ğæ“¾‚·‚éB
-        /// </summary>
         public NotePosition GetSelectedNextLongNote(NotePosition current, Func<NoteObject, NotePosition> accessor)
         {
             while (EditData.Notes.ContainsKey(current))
@@ -179,24 +138,13 @@ namespace NoteMaker.Presenter
             return NotePosition.None;
         }
 
-        /// <summary>
-        /// w’è‹éŒ`“à‚É‚ ‚éƒm[ƒg‚ğæ“¾‚·‚éB
-        /// </summary>
         Dictionary<NotePosition, NoteObject> GetNotesWithin(Rect rect)
         {
             return EditData.Notes
-                .Where(kv =>
-                    rect.Contains(
-                        ConvertUtils.CanvasToScreenPosition(
-                            ConvertUtils.NoteToCanvasPosition(kv.Value.note.position)),
-                        true))
+                .Where(kv => rect.Contains(ConvertUtils.CanvasToScreenPosition(ConvertUtils.NoteToCanvasPosition(kv.Value.note.position)), true))
                 .ToDictionary(kv => kv.Key, kv => kv.Value);
         }
 
-        /// <summary>
-        /// ƒm[ƒg‚ğƒRƒs[‚·‚éB
-        /// ƒƒ“ƒOƒm[ƒg‚Ìê‡‚Í next / prev ‚ÌÚ‘±‚àl—¶‚·‚éB
-        /// </summary>
         void CopyNotes(IEnumerable<NoteObject> notes)
         {
             copiedNotes = notes.Select(noteObj =>
@@ -212,18 +160,11 @@ namespace NoteMaker.Presenter
             .ToList();
         }
 
-        /// <summary>
-        /// ƒm[ƒg‚ğíœ‚·‚éB
-        /// </summary>
         void DeleteNotes(IEnumerable<NoteObject> notes)
         {
-            notes.ToList().ForEach(note =>
-                editPresenter.RequestForRemoveNote.OnNext(note.note));
+            notes.ToList().ForEach(note => editPresenter.RequestForRemoveNote.OnNext(note.note));
         }
 
-        /// <summary>
-        /// ‘I‘ğó‘Ô‚ğ‚·‚×‚Ä‰ğœ‚·‚éB
-        /// </summary>
         void Deselect()
         {
             selectedNoteObjects.Values
@@ -234,13 +175,9 @@ namespace NoteMaker.Presenter
             selectedNoteObjects.Clear();
         }
 
-        /// <summary>
-        /// Rect ‚ğ GLLineDrawer —p‚Ì Line ”z—ñ‚É•ÏŠ·‚·‚éB
-        /// </summary>
         Line[] ToLines(Rect rect, Color color)
         {
-            return new[]
-            {
+            return new[] {
                 new Line(rect.min, rect.min + Vector2.right * rect.size.x, color),
                 new Line(rect.min, rect.min + Vector2.up    * rect.size.y, color),
                 new Line(rect.max, rect.max + Vector2.left  * rect.size.x, color),

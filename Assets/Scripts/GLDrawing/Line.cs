@@ -1,26 +1,13 @@
-// ========================================
-//
-// Line.cs
-//
-// ========================================
-//
-// GL •`‰æ—p‚Ìƒ‰ƒCƒ“iŠJn“_EI—¹“_EFj‚ğ•\‚·\‘¢‘Ì
-//
-// ========================================
-
-using UnityEngine;
+ï»¿using UnityEngine;
 
 namespace NoteMaker.GLDrawing
 {
     public struct Line
     {
-        public Color color;     // ƒ‰ƒCƒ“‚ÌF
-        public Vector3 start;   // ŠJnÀ•W
-        public Vector3 end;     // I—¹À•W
+        public Color color;
+        public Vector3 start;
+        public Vector3 end;
 
-        /// <summary>
-        /// ŠJn“_EI—¹“_EF‚ğw’è‚µ‚Äƒ‰ƒCƒ“‚ğ¶¬‚·‚éB
-        /// </summary>
         public Line(Vector3 start, Vector3 end, Color color)
         {
             this.color = color;

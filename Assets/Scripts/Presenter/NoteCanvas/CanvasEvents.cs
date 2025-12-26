@@ -1,21 +1,4 @@
-// ========================================
-//
-// CanvasEvents.cs
-//
-// ========================================
-//
-// ƒLƒƒƒ“ƒoƒXã‚Ìƒ}ƒEƒXƒCƒxƒ“ƒg‚ğ UniRx ‚Ì Subject ‚Æ‚µ‚ÄŒöŠJ‚·‚éƒNƒ‰ƒXB
-// Eƒm[ƒg—ÌˆæiNotesRegionj
-// E”gŒ`—ÌˆæiWaveformRegionj
-// EcüiVerticalLinej
-// Eƒ}ƒEƒXƒzƒC[ƒ‹
-// ‚È‚Ç‚ÌƒCƒxƒ“ƒg‚ğ Presenter ‘w‚Ö’Ê’m‚·‚é–ğŠ„‚ğ‚ÂB
-//
-// NoteCanvas ‚Ìuƒ}ƒEƒX‚ª—Ìˆæã‚É‚ ‚é‚©‚Ç‚¤‚©v‚à‚±‚±‚ÅXV‚·‚éB
-//
-// ========================================
-
-using NoteMaker.Model;
+ï»¿using NoteMaker.Model;
 using UniRx;
 using UniRx.Triggers;
 using UnityEngine;
@@ -24,67 +7,37 @@ namespace NoteMaker.Presenter
 {
     public class CanvasEvents : MonoBehaviour
     {
-        // Notes —Ìˆæ‚ÌƒCƒxƒ“ƒg
         public readonly Subject<Vector3> NotesRegionOnMouseUpObservable = new Subject<Vector3>();
         public readonly Subject<Vector3> NotesRegionOnMouseExitObservable = new Subject<Vector3>();
         public readonly Subject<Vector3> NotesRegionOnMouseDownObservable = new Subject<Vector3>();
         public readonly Subject<Vector3> NotesRegionOnMouseEnterObservable = new Subject<Vector3>();
-
-        // cüƒNƒŠƒbƒN
         public readonly Subject<Vector3> VerticalLineOnMouseDownObservable = new Subject<Vector3>();
-
-        // Waveform —Ìˆæ‚ÌƒCƒxƒ“ƒg
         public readonly Subject<Vector3> WaveformRegionOnMouseDownObservable = new Subject<Vector3>();
         public readonly Subject<Vector3> WaveformRegionOnMouseExitObservable = new Subject<Vector3>();
         public readonly Subject<Vector3> WaveformRegionOnMouseEnterObservable = new Subject<Vector3>();
-
-        // ƒ}ƒEƒXƒzƒC[ƒ‹
         public readonly Subject<float> MouseScrollWheelObservable = new Subject<float>();
 
-        /// <summary>
-        /// ƒ}ƒEƒXƒzƒC[ƒ‹‚Æ—Ìˆæƒzƒo[ó‘Ô‚ÌŠÄ‹‚ğƒZƒbƒgƒAƒbƒv‚·‚éB
-        /// </summary>
         void Awake()
         {
-            // -----------------------------
-            // ƒ}ƒEƒXƒzƒC[ƒ‹
-            // -----------------------------
             this.UpdateAsObservable()
                 .Select(_ => Input.GetAxis("Mouse ScrollWheel"))
                 .Where(delta => delta != 0)
                 .Subscribe(MouseScrollWheelObservable.OnNext);
 
-            // -----------------------------
-            // Notes —Ìˆæ‚Ìƒzƒo[ó‘Ô
-            // -----------------------------
             NotesRegionOnMouseExitObservable.Select(_ => false)
                 .Merge(NotesRegionOnMouseEnterObservable.Select(_ => true))
                 .Subscribe(isMouseOver => NoteCanvas.IsMouseOverNotesRegion.Value = isMouseOver);
 
-            // -----------------------------
-            // Waveform —Ìˆæ‚Ìƒzƒo[ó‘Ô
-            // -----------------------------
             WaveformRegionOnMouseExitObservable.Select(_ => false)
                 .Merge(WaveformRegionOnMouseEnterObservable.Select(_ => true))
                 .Subscribe(isMouseOver => NoteCanvas.IsMouseOverWaveformRegion.Value = isMouseOver);
         }
 
-        // -----------------------------
-        // Notes —ÌˆæƒCƒxƒ“ƒg
-        // -----------------------------
         public void NotesRegionOnMouseUp() { NotesRegionOnMouseUpObservable.OnNext(Input.mousePosition); }
         public void NotesRegionOnMouseExit() { NotesRegionOnMouseExitObservable.OnNext(Input.mousePosition); }
         public void NotesRegionOnMouseDown() { NotesRegionOnMouseDownObservable.OnNext(Input.mousePosition); }
         public void NotesRegionOnMouseEnter() { NotesRegionOnMouseEnterObservable.OnNext(Input.mousePosition); }
-
-        // -----------------------------
-        // cüƒNƒŠƒbƒN
-        // -----------------------------
         public void VerticalLineOnMouseDown() { VerticalLineOnMouseDownObservable.OnNext(Input.mousePosition); }
-
-        // -----------------------------
-        // Waveform —ÌˆæƒCƒxƒ“ƒg
-        // -----------------------------
         public void WaveformRegionOnMouseDown() { WaveformRegionOnMouseDownObservable.OnNext(Input.mousePosition); }
         public void WaveformRegionOnMouseExit() { WaveformRegionOnMouseExitObservable.OnNext(Input.mousePosition); }
         public void WaveformRegionOnMouseEnter() { WaveformRegionOnMouseEnterObservable.OnNext(Input.mousePosition); }

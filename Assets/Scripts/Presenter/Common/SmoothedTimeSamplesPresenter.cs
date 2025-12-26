@@ -1,16 +1,4 @@
-// ========================================
-//
-// SmoothedTimeSamplesPresenter.cs
-//
-// ========================================
-//
-// Ä¶’†‚Ì timeSamples ‚ðŠŠ‚ç‚©‚É•âŠÔ‚µA
-// ”gŒ`•`‰æ‚È‚Ç‚ÅŽg—p‚·‚é SmoothedTimeSamples ‚ðXV‚·‚éƒNƒ‰ƒXB
-// Ä¶’†‚Í•âŠÔ’l‚ð‰ÁŽZ‚µA’âŽ~’†‚Í Audio.TimeSamples ‚É“¯Šú‚³‚¹‚éB
-//
-// ========================================
-
-using NoteMaker.Model;
+ï»¿using NoteMaker.Model;
 using UniRx;
 using UniRx.Triggers;
 using UnityEngine;
@@ -21,16 +9,14 @@ namespace NoteMaker.Presenter
     {
         void Awake()
         {
-            var prevFrameSamples = 0f; // ‘OƒtƒŒ[ƒ€‚Ì•âŠÔƒTƒ“ƒvƒ‹’l
-            var counter = 0;           // •âŠÔ•ûŽ®Ø‚è‘Ö‚¦—pƒJƒEƒ“ƒ^
+            var prevFrameSamples = 0f;
+            var counter = 0;
 
-            // Ä¶’†‚Í•âŠÔ‚µ‚È‚ª‚ç SmoothedTimeSamples ‚ðXV
             this.UpdateAsObservable()
                 .Where(_ => Audio.Source.clip != null)
                 .Where(_ => Audio.IsPlaying.Value)
                 .Subscribe(_ =>
                 {
-                    // 100ƒtƒŒ[ƒ€‚É1‰ñ‚ÍŽÀƒTƒ“ƒvƒ‹·•ª‚ðŽg—p‚µA‚»‚êˆÈŠO‚Í deltaTime ‚©‚çŒvŽZ
                     var deltaSamples = counter == 0
                         ? (Audio.Source.timeSamples - prevFrameSamples)
                         : Audio.Source.clip.frequency * Time.deltaTime;
@@ -38,10 +24,9 @@ namespace NoteMaker.Presenter
                     Audio.SmoothedTimeSamples.Value += deltaSamples;
                     prevFrameSamples = Audio.SmoothedTimeSamples.Value;
 
-                    counter = ++counter % 100;
+                    counter = ++counter % 180;
                 });
 
-            // ’âŽ~’†‚Í timeSamples ‚ÉŠ®‘S“¯Šú
             Audio.TimeSamples
                 .Where(_ => Audio.Source.clip != null)
                 .Where(_ => !Audio.IsPlaying.Value)

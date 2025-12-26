@@ -1,4 +1,4 @@
-using NoteMaker.Model;
+﻿using NoteMaker.Model;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,13 +7,18 @@ namespace NoteMaker.Presenter
 {
     public class VolumePresenter : MonoBehaviour
     {
-        [SerializeField] Slider volumeController = default;
-        [SerializeField] Image image = default;
-        [SerializeField] Sprite iconSound2 = default;
-        [SerializeField] Sprite iconSound = default;
-        [SerializeField] Sprite iconMute = default;
+        [SerializeField]
+        Slider volumeController = default;
+        [SerializeField]
+        Image image = default;
+        [SerializeField]
+        Sprite iconSound2 = default;
+        [SerializeField]
+        Sprite iconSound = default;
+        [SerializeField]
+        Sprite iconMute = default;
 
-        private void Awake()
+        void Awake()
         {
             Audio.OnLoad.First().Subscribe(_ => Init());
         }

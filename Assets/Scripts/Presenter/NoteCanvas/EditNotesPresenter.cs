@@ -1,36 +1,19 @@
-// ========================================
-//
-// EditNotesPresenter.cs
-//
-// ========================================
-//
-// ƒm[ƒg•ÒW‘S”Ê‚ğŠÇ—‚·‚é PresenterB
-// Eƒm[ƒg’Ç‰Á / íœ
-// Eƒƒ“ƒOƒm[ƒg•ÒWiŠJn / Ú‘± / I—¹j
-// EƒNƒŠƒbƒNˆ—
-// EUndo / Redo ˜AŒg
-//
-// NoteObject ‚â EditData ‚Æ–§Ú‚É˜AŒg‚µA
-// ƒm[ƒg•ÒW‚Ì’†S“I‚È–ğŠ„‚ğ’S‚¤B
-//
-// ========================================
-
+ï»¿using NoteMaker.Common;
+using NoteMaker.Notes;
+using NoteMaker.Model;
+using NoteMaker.Utility;
 using System.Linq;
 using UniRx;
 using UniRx.Triggers;
 using UnityEngine;
-using NoteMaker.Common;
-using NoteMaker.Model;
-using NoteMaker.Notes;
-using NoteMaker.Utility;
 
 namespace NoteMaker.Presenter
 {
     public class EditNotesPresenter : SingletonMonoBehaviour<EditNotesPresenter>
     {
-        [SerializeField] CanvasEvents canvasEvents = default;
+        [SerializeField]
+        CanvasEvents canvasEvents = default;
 
-        // ƒm[ƒg•ÒW—v‹ƒCƒxƒ“ƒg
         public readonly Subject<Note> RequestForEditNote = new Subject<Note>();
         public readonly Subject<Note> RequestForRemoveNote = new Subject<Note>();
         public readonly Subject<Note> RequestForAddNote = new Subject<Note>();
@@ -41,22 +24,13 @@ namespace NoteMaker.Presenter
             Audio.OnLoad.First().Subscribe(_ => Init());
         }
 
-        /// <summary>
-        /// ƒm[ƒg•ÒWˆ—‚Ì‰Šú‰»B
-        /// </summary>
         void Init()
         {
-            // ----------------------------------------
-            // ƒm[ƒg—ÌˆæƒNƒŠƒbƒNiÅŠñ‚èƒm[ƒgˆÊ’u‚ª—LŒøj
-            // ----------------------------------------
             var closestNoteAreaOnMouseDownObservable = canvasEvents.NotesRegionOnMouseDownObservable
                 .Where(_ => !KeyInput.CtrlKey())
                 .Where(_ => !Input.GetMouseButtonDown(1))
                 .Where(_ => 0 <= NoteCanvas.ClosestNotePosition.Value.num);
 
-            // ----------------------------------------
-            // ’Pƒm[ƒg or ƒƒ“ƒOƒm[ƒg‚ÌƒNƒŠƒbƒNˆ—
-            // ----------------------------------------
             closestNoteAreaOnMouseDownObservable
                 .Where(_ => EditState.NoteType.Value == NoteTypes.Single)
                 .Where(_ => !KeyInput.ShiftKey())
@@ -66,93 +40,67 @@ namespace NoteMaker.Presenter
                 {
                     if (EditData.Notes.ContainsKey(NoteCanvas.ClosestNotePosition.Value))
                     {
-                        // Šù‘¶ƒm[ƒg ¨ NoteObject ‚ÌƒNƒŠƒbƒNˆ—‚Ö
-                        EditData.Notes[NoteCanvas.ClosestNotePosition.Value]
-                            .OnClickObservable.OnNext(Unit.Default);
+                        EditData.Notes[NoteCanvas.ClosestNotePosition.Value].OnClickObservable.OnNext(Unit.Default);
                     }
                     else
                     {
-                        // V‹Kƒm[ƒg’Ç‰Á
                         RequestForEditNote.OnNext(
-                            new Note(
-                                NoteCanvas.ClosestNotePosition.Value,
-                                EditState.NoteType.Value,
-                                NotePosition.None,
-                                EditState.LongNoteTailPosition.Value));
+                           new Note(
+                               NoteCanvas.ClosestNotePosition.Value,
+                               EditState.NoteType.Value,
+                               NotePosition.None,
+                               EditState.LongNoteTailPosition.Value));
                     }
                 });
 
-            // ----------------------------------------
-            // Shift + ƒNƒŠƒbƒN ¨ ƒƒ“ƒOƒm[ƒg•ÒWŠJn
-            // ----------------------------------------
+
+            // Start editing of long note
             closestNoteAreaOnMouseDownObservable
                 .Where(_ => EditState.NoteType.Value == NoteTypes.Single)
                 .Where(_ => KeyInput.ShiftKey())
                 .Do(_ => EditState.NoteType.Value = NoteTypes.Long)
-                .Subscribe(_ =>
-                    RequestForAddNote.OnNext(
-                        new Note(
-                            NoteCanvas.ClosestNotePosition.Value,
-                            NoteTypes.Long,
-                            NotePosition.None,
-                            NotePosition.None)));
+                .Subscribe(_ => RequestForAddNote.OnNext(
+                    new Note(
+                        NoteCanvas.ClosestNotePosition.Value,
+                        NoteTypes.Long,
+                        NotePosition.None,
+                        NotePosition.None)));
 
-            // ----------------------------------------
-            // ƒƒ“ƒOƒm[ƒg•ÒWI—¹iEsc or ‰EƒNƒŠƒbƒNj
-            // ----------------------------------------
+
+            // Finish editing long note by press-escape or right-click
             this.UpdateAsObservable()
                 .Where(_ => EditState.NoteType.Value == NoteTypes.Long)
                 .Where(_ => Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
                 .Subscribe(_ => EditState.NoteType.Value = NoteTypes.Single);
 
-            // ƒƒ“ƒOƒm[ƒgI—¹‚Í––”öˆÊ’u‚ğƒŠƒZƒbƒg
-            EditState.NoteType
-                .Where(editType => editType == NoteTypes.Single)
-                .Subscribe(_ => EditState.LongNoteTailPosition.Value = NotePosition.None);
+            var finishEditLongNoteObservable = EditState.NoteType.Where(editType => editType == NoteTypes.Single);
 
-            // ----------------------------------------
-            // ƒm[ƒgíœiUndo/Redo ‘Î‰j
-            // ----------------------------------------
-            RequestForRemoveNote
-                .Buffer(RequestForRemoveNote.ThrottleFrame(1))
-                .Select(b => b.OrderBy(note =>
-                    note.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value)).ToList())
-                .Subscribe(notes =>
-                    EditCommandManager.Do(
-                        new Command(
-                            () => notes.ForEach(RemoveNote),
-                            () => notes.ForEach(AddNote))));
+            finishEditLongNoteObservable.Subscribe(_ => EditState.LongNoteTailPosition.Value = NotePosition.None);
 
-            // ----------------------------------------
-            // ƒm[ƒg’Ç‰ÁiUndo/Redo ‘Î‰j
-            // ----------------------------------------
-            RequestForAddNote
-                .Buffer(RequestForAddNote.ThrottleFrame(1))
-                .Select(b => b.OrderBy(note =>
-                    note.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value)).ToList())
-                .Subscribe(notes =>
-                    EditCommandManager.Do(
-                        new Command(
-                            () => notes.ForEach(AddNote),
-                            () => notes.ForEach(RemoveNote))));
 
-            // ----------------------------------------
-            // ƒm[ƒgó‘Ô•ÏXiUndo/Redo ‘Î‰j
-            // ----------------------------------------
-            RequestForChangeNoteStatus
-                .Select(note => new { current = note, prev = EditData.Notes[note.position].note })
+            RequestForRemoveNote.Buffer(RequestForRemoveNote.ThrottleFrame(1))
+                .Select(b => b.OrderBy(note => note.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value)).ToList())
+                .Subscribe(notes => EditCommandManager.Do(
+                    new Command(
+                        () => notes.ForEach(RemoveNote),
+                        () => notes.ForEach(AddNote))));
+
+            RequestForAddNote.Buffer(RequestForAddNote.ThrottleFrame(1))
+                .Select(b => b.OrderBy(note => note.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value)).ToList())
+                .Subscribe(notes => EditCommandManager.Do(
+                    new Command(
+                        () => notes.ForEach(AddNote),
+                        () => notes.ForEach(RemoveNote))));
+
+            RequestForChangeNoteStatus.Select(note => new { current = note, prev = EditData.Notes[note.position].note })
                 .Buffer(RequestForChangeNoteStatus.ThrottleFrame(1))
-                .Select(b => b.OrderBy(note =>
-                    note.current.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value)).ToList())
-                .Subscribe(notes =>
-                    EditCommandManager.Do(
-                        new Command(
-                            () => notes.ForEach(x => ChangeNoteStates(x.current)),
-                            () => notes.ForEach(x => ChangeNoteStates(x.prev)))));
+                .Select(b => b.OrderBy(note => note.current.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value)).ToList())
+                .Subscribe(notes => EditCommandManager.Do(
+                    new Command(
+                        () => notes.ForEach(x => ChangeNoteStates(x.current)),
+                        () => notes.ForEach(x => ChangeNoteStates(x.prev)))));
 
-            // ----------------------------------------
-            // RequestForEditNote ¨ Add / Remove / Change ‚ÉU‚è•ª‚¯
-            // ----------------------------------------
+
             RequestForEditNote.Subscribe(note =>
             {
                 if (note.type == NoteTypes.Single)
@@ -178,10 +126,6 @@ namespace NoteMaker.Presenter
                 }
             });
         }
-
-        // ========================================
-        // ƒm[ƒg‘€ìiAdd / Remove / Changej
-        // ========================================
 
         public void AddNote(Note note)
         {

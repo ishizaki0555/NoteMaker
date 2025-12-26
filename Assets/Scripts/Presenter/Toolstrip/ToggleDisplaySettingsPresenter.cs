@@ -1,43 +1,47 @@
-using NoteMaker.Model;
+﻿using NoteMaker.Model;
 using UniRx;
 using UniRx.Triggers;
 using UnityEngine;
-using UnityEngine.InputSystem.Composites;
 using UnityEngine.UI;
 
-public class ToggleDisplaySettingsPresenter : MonoBehaviour
+namespace NoteMaker.Presenter
 {
-    [SerializeField] Button toggleDisplaySettingsPresenter = default;
-    [SerializeField] GameObject settingsWindow = default;
-
-    bool isMouseOverSettingsWindow = false;
-
-    private void Awake()
+    public class ToggleDisplaySettingsPresenter : MonoBehaviour
     {
-        toggleDisplaySettingsPresenter.OnClickAsObservable()
-            .Subscribe(_ => Settings.IsOpen.Value = !Settings.IsOpen.Value);
+        [SerializeField]
+        Button toggleDisplaySettingsButton = default;
+        [SerializeField]
+        GameObject settingsWindow = default;
 
-        Observable.Merge(
-            this.UpdateAsObservable()
-                .Where(_ => Settings.IsOpen.Value)
-                .Where(_ => Input.GetKey(KeyCode.Escape)),
-            this.UpdateAsObservable()
-                .Where(_ => Settings.IsOpen.Value)
-                .Where(_ => !isMouseOverSettingsWindow)
-                .Where(_ => Input.GetMouseButton(0)))
-            .Subscribe(_ => Settings.IsOpen.Value = false);
+        bool isMouseOverSettingsWindow = false;
 
-        Settings.IsOpen.Subscribe(_ => Settings.SelectedBlock.Value = -1);
-        Settings.IsOpen.Subscribe(isOpen => settingsWindow.SetActive(isOpen));
-    }
+        void Awake()
+        {
+            toggleDisplaySettingsButton.OnClickAsObservable()
+                .Subscribe(_ => Settings.IsOpen.Value = !Settings.IsOpen.Value);
 
-    public void OnMouseEnterSettingsWindow()
-    {
-        isMouseOverSettingsWindow = true;
-    }
+            Observable.Merge(
+                    this.UpdateAsObservable()
+                        .Where(_ => Settings.IsOpen.Value)
+                        .Where(_ => Input.GetKey(KeyCode.Escape)),
+                    this.UpdateAsObservable()
+                        .Where(_ => Settings.IsOpen.Value)
+                        .Where(_ => !isMouseOverSettingsWindow)
+                        .Where(_ => Input.GetMouseButtonDown(0)))
+                .Subscribe(_ => Settings.IsOpen.Value = false);
 
-    public void OnMouseExitSettingsWindow()
-    {
-        isMouseOverSettingsWindow = false;
+            Settings.IsOpen.Subscribe(_ => Settings.SelectedBlock.Value = -1);
+            Settings.IsOpen.Subscribe(isOpen => settingsWindow.SetActive(isOpen));
+        }
+
+        public void OnMouseEnterSettingsWindow()
+        {
+            isMouseOverSettingsWindow = true;
+        }
+
+        public void OnMouseExitSettingsWindow()
+        {
+            isMouseOverSettingsWindow = false;
+        }
     }
 }

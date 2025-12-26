@@ -1,52 +1,33 @@
-// ========================================
-//
-// UIBehaviourExtensions.cs
-//
-// ========================================
-//
-// uGUI ‚Ì UIBehaviour ‚É EventTrigger ‚ğŠÈ’P‚É’Ç‰ÁEíœ‚·‚éŠg’£ƒƒ\ƒbƒh
-//
-// ========================================
-
-// for uGUI(form 4.6)
+ï»¿// for uGUI(from 4.6)
 #if !(UNITY_4_0 || UNITY_4_1 || UNITY_4_2 || UNITY_4_3 || UNITY_4_4 || UNITY_4_5)
 
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
-public static partial class UIBehaviourExtensions
+namespace NoteMaker.Utility
 {
-    /// <summary>
-    /// w’è‚µ‚½ UIBehaviour ‚É EventTrigger ‚ğ’Ç‰Á‚µAƒCƒxƒ“ƒgƒŠƒXƒi[‚ğ“o˜^‚·‚éB
-    /// </summary>
-    public static void AddListener(this UIBehaviour uiBehaviour, EventTriggerType eventID, UnityAction<BaseEventData> callback)
+    public static partial class UIBehaviourExtensions
     {
-        var entry = new EventTrigger.Entry();
-        entry.eventID = eventID;
-        entry.callback.AddListener(callback);
+        public static void AddListener(this UIBehaviour uiBehaviour, EventTriggerType eventID, UnityAction<BaseEventData> callback)
+        {
+            var entry = new EventTrigger.Entry();
+            entry.eventID = eventID;
+            entry.callback.AddListener(callback);
 
-        // EventTrigger ‚ª‘¶İ‚µ‚È‚¯‚ê‚Î’Ç‰Á‚µAtriggers ‚ğæ“¾‚·‚é
-        var eventTriggers =
-            (uiBehaviour.GetComponent<EventTrigger>() ??
-             uiBehaviour.gameObject.AddComponent<EventTrigger>())
-            .triggers;
+            var eventTriggers = (uiBehaviour.GetComponent<EventTrigger>() ?? uiBehaviour.gameObject.AddComponent<EventTrigger>()).triggers;
+            eventTriggers.Add(entry);
+        }
 
-        eventTriggers.Add(entry);
-    }
+        public static void RemoveAllListeners(this UIBehaviour uiBehaviour, EventTriggerType eventID)
+        {
+            var eventTrigger = uiBehaviour.GetComponent<EventTrigger>();
 
-    /// <summary>
-    /// w’è‚µ‚½ƒCƒxƒ“ƒg ID ‚Ì EventTrigger ƒŠƒXƒi[‚ğ‚·‚×‚Äíœ‚·‚éB
-    /// </summary>
-    public static void RemoveAllListeners(this UIBehaviour uIBehaviour, EventTriggerType eventID)
-    {
-        var eventTrgger = uIBehaviour.GetComponent<EventTrigger>();
+            if (eventTrigger == null)
+                return;
 
-        // EventTrigger ‚ª‘¶İ‚µ‚È‚¢ê‡‚Í‰½‚à‚µ‚È‚¢
-        if (eventTrgger == null)
-            return;
-
-        // w’è eventID ‚ÌƒŠƒXƒi[‚ğ‚·‚×‚Äíœ
-        eventTrgger.triggers.RemoveAll(listener => listener.eventID == eventID);
+            eventTrigger.triggers.RemoveAll(listener => listener.eventID == eventID);
+        }
     }
 }
+
 #endif

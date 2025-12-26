@@ -1,5 +1,5 @@
+﻿using NoteMaker.Notes;
 using NoteMaker.Model;
-using NoteMaker.Notes;
 using NoteMaker.Utility;
 using UniRx;
 using UniRx.Triggers;
@@ -10,13 +10,18 @@ namespace NoteMaker.Presenter
 {
     public class ToggleEditTypePresenter : MonoBehaviour
     {
-        [SerializeField] Button editTypeToggleButton = default;
-        [SerializeField] Sprite iconLongNotes = default;
-        [SerializeField] Sprite iconSingleNotes = default;
-        [SerializeField] Color longTypeStateButtonColor = default;
-        [SerializeField] Color singleTypeStateButtonColor = default;
+        [SerializeField]
+        Button editTypeToggleButton = default;
+        [SerializeField]
+        Sprite iconLongNotes = default;
+        [SerializeField]
+        Sprite iconSingleNotes = default;
+        [SerializeField]
+        Color longTypeStateButtonColor = default;
+        [SerializeField]
+        Color singleTypeStateButtonColor = default;
 
-        private void Awake()
+        void Awake()
         {
             editTypeToggleButton.OnClickAsObservable()
                 .Merge(this.UpdateAsObservable().Where(_ => KeyInput.AltKeyDown()))

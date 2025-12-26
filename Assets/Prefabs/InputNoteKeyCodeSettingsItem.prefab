@@ -183,13 +183,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 135606}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9d1d1b6c938e61e498a806c166283a5e, type: 3}
+  m_Script: {fileID: 11500000, guid: 3e9ab8d9b2d7098439a785d2ac2756b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   selectedStateBackgroundColor: {r: 0, g: 0, b: 0, a: 1}
-  defaultBackgroundColor: {r: 0.26415092, g: 0.26415092, b: 0.26415092, a: 1}
+  defaultBackgroundColor: {r: 0.24528301, g: 0.24528301, b: 0.24528301, a: 1}
   selectedTextColor: {r: 1, g: 1, b: 1, a: 1}
-  defaultTextColor: {r: 0.5566038, g: 0.5566038, b: 0.5566038, a: 1}
+  defaultTextColor: {r: 0.4433962, g: 0.4433962, b: 0.4433962, a: 1}
 --- !u!1 &154274
 GameObject:
   m_ObjectHideFlags: 0

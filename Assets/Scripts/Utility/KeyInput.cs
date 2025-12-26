@@ -1,94 +1,64 @@
-// ========================================
-//
-// KeyInput.cs
-//
-// ========================================
-//
-// Shift / Alt / Ctrl ‚È‚Ç‚ÌƒL[“ü—Í‚ğˆµ‚¤ƒ†[ƒeƒBƒŠƒeƒB
-//
-// ========================================
-
-using UnityEngine;
+ï»¿using UnityEngine;
 
 namespace NoteMaker.Utility
 {
     public class KeyInput
     {
-        /// <summary>
-        /// Shift ‚ğ‰Ÿ‚µ‚È‚ª‚çw’èƒL[‚ğ‰Ÿ‚µ‚½‚©‚Ç‚¤‚©‚ğ•Ô‚·B
-        /// </summary>
         public static bool ShiftPlus(KeyCode keyCode)
         {
             return ShiftKey() && Input.GetKeyDown(keyCode);
         }
 
-        /// <summary>
-        /// Shift ƒL[‚ª‰Ÿ‚³‚ê‚Ä‚¢‚é‚©‚Ç‚¤‚©‚ğ•Ô‚·B
-        /// </summary>
         public static bool ShiftKey()
         {
             return Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         }
 
-        /// <summary>
-        /// Shift ƒL[‚ª‰Ÿ‚³‚ê‚½uŠÔ‚©‚Ç‚¤‚©‚ğ•Ô‚·B
-        /// </summary>
         public static bool ShiftKeyDown()
         {
             return Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift);
         }
 
-        /// <summary>
-        /// Alt ‚ğ‰Ÿ‚µ‚È‚ª‚çw’èƒL[‚ğ‰Ÿ‚µ‚½‚©‚Ç‚¤‚©‚ğ•Ô‚·B
-        /// </summary>
         public static bool AltPlus(KeyCode keyCode)
         {
             return AltKey() && Input.GetKeyDown(keyCode);
         }
 
-        /// <summary>
-        /// Alt ƒL[‚ª‰Ÿ‚³‚ê‚Ä‚¢‚é‚©‚Ç‚¤‚©‚ğ•Ô‚·B
-        /// </summary>
         public static bool AltKey()
         {
             return Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
         }
 
-        /// <summary>
-        /// Alt ƒL[‚ª‰Ÿ‚³‚ê‚½uŠÔ‚©‚Ç‚¤‚©‚ğ•Ô‚·B
-        /// </summary>
         public static bool AltKeyDown()
         {
             return Input.GetKeyDown(KeyCode.LeftAlt) || Input.GetKeyDown(KeyCode.RightAlt);
         }
 
-        /// <summary>
-        /// Ctrl ‚ğ‰Ÿ‚µ‚È‚ª‚çw’èƒL[‚ğ‰Ÿ‚µ‚½‚©‚Ç‚¤‚©‚ğ•Ô‚·B
-        /// </summary>
         public static bool CtrlPlus(KeyCode keyCode)
         {
             return CtrlKey() && Input.GetKeyDown(keyCode);
         }
 
-        /// <summary>
-        /// Ctrl ƒL[‚ª‰Ÿ‚³‚ê‚½uŠÔ‚©‚Ç‚¤‚©‚ğ•Ô‚·B
-        /// </summary>
         public static bool CtrlKey()
         {
-            return Input.GetKeyDown(KeyCode.LeftControl) ||
-                   Input.GetKeyDown(KeyCode.LeftCommand) ||
-                   Input.GetKeyDown(KeyCode.RightControl) ||
-                   Input.GetKeyDown(KeyCode.RightCommand);
+            return Input.GetKey(KeyCode.LeftControl) ||
+                Input.GetKey(KeyCode.LeftCommand) ||
+                Input.GetKey(KeyCode.RightControl) ||
+                Input.GetKey(KeyCode.RightCommand);
         }
 
-        /// <summary>
-        /// Œ»İ‰Ÿ‚³‚ê‚Ä‚¢‚éƒL[‚ğ 1 ‚Âæ“¾‚·‚éB
-        /// </summary>
+        public static bool CtrlKeyDown()
+        {
+            return Input.GetKeyDown(KeyCode.LeftControl) ||
+                Input.GetKeyDown(KeyCode.LeftCommand) ||
+                Input.GetKeyDown(KeyCode.RightControl) ||
+                Input.GetKeyDown(KeyCode.RightCommand);
+        }
+
         public static KeyCode FetchKey()
         {
             int e = System.Enum.GetNames(typeof(KeyCode)).Length;
 
-            // ‚·‚×‚Ä‚Ì KeyCode ‚ğ‡‚Éƒ`ƒFƒbƒN‚µ‚Ä‰Ÿ‚³‚ê‚Ä‚¢‚éƒL[‚ğ’T‚·
             for (int i = 0; i < e; i++)
             {
                 if (Input.GetKey((KeyCode)i))

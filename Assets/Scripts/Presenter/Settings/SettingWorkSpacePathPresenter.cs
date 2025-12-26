@@ -1,4 +1,4 @@
-using NoteMaker.Model;
+﻿using NoteMaker.Model;
 using System.IO;
 using UniRx;
 using UnityEngine;
@@ -8,12 +8,16 @@ namespace NoteMaker.Presenter
 {
     public class SettingWorkSpacePathPresenter : MonoBehaviour
     {
-        [SerializeField] InputField workSpacePathInputField = default;
-        [SerializeField] Text workSpacePathInputFieldText = default;
-        [SerializeField] Color defaultTextColor = default;
-        [SerializeField] Color invalidStateTextColor = default;
+        [SerializeField]
+        InputField workSpacePathInputField = default;
+        [SerializeField]
+        Text workSpacePathInputFieldText = default;
+        [SerializeField]
+        Color defaultTextColor = default;
+        [SerializeField]
+        Color invalidStateTextColor = default;
 
-        private void Awake()
+        void Awake()
         {
             workSpacePathInputField.OnValueChangedAsObservable()
                 .Select(path => Directory.Exists(path))

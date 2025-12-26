@@ -1,15 +1,4 @@
-// ========================================
-//
-// Settings.cs
-//
-// ========================================
-//
-// ƒGƒfƒBƒ^İ’èiƒ[ƒNƒXƒy[ƒXƒpƒXE“ü—ÍƒL[İ’èE‘I‘ğƒuƒƒbƒN‚È‚Çj
-// ‚ğ•Û‚·‚éƒVƒ“ƒOƒ‹ƒgƒ“
-//
-// ========================================
-
-using NoteMaker.Utility;
+ï»¿using NoteMaker.Utility;
 using System.Collections.Generic;
 using UniRx;
 using UnityEngine;
@@ -18,43 +7,17 @@ namespace NoteMaker.Model
 {
     public class Settings : SingletonMonoBehaviour<Settings>
     {
-        ReactiveProperty<string> workSpacePath_ = new ReactiveProperty<string>();                   // ƒ[ƒNƒXƒy[ƒX‚ÌƒpƒX
-        ReactiveProperty<List<KeyCode>> noteInputKeyCodes_ = new ReactiveProperty<List<KeyCode>>(); // ƒm[ƒg“ü—Í‚Ég—p‚·‚éƒL[ˆê——
-        ReactiveProperty<int> selectedBlock_ = new ReactiveProperty<int>();                         // Œ»İ‘I‘ğ’†‚ÌƒuƒƒbƒN”Ô†
-        ReactiveProperty<bool> isOpen_ = new ReactiveProperty<bool>(false);                         // İ’èƒEƒBƒ“ƒhƒE‚ªŠJ‚¢‚Ä‚¢‚é‚©
-        Subject<Unit> requestForChangeInputNoteKeyCode_ = new Subject<Unit>();                      // “ü—ÍƒL[•ÏX—v‹ƒCƒxƒ“ƒg
+        ReactiveProperty<string> workSpacePath_ = new ReactiveProperty<string>();
+        ReactiveProperty<List<KeyCode>> noteInputKeyCodes_ = new ReactiveProperty<List<KeyCode>>();
+        ReactiveProperty<int> selectedBlock_ = new ReactiveProperty<int>();
+        ReactiveProperty<bool> isOpen_ = new ReactiveProperty<bool>(false);
+        Subject<Unit> requestForChangeInputNoteKeyCode_ = new Subject<Unit>();
 
-        public static ReactiveProperty<string> WorkSpacePath
-        {
-            get { return Instance.workSpacePath_; }
-        }
-
-        public static ReactiveProperty<List<KeyCode>> NoteInputKeyCodes
-        {
-            get { return Instance.noteInputKeyCodes_; }
-        }
-
-        public static ReactiveProperty<int> SelectedBlock
-        {
-            get { return Instance.selectedBlock_; }
-        }
-
-        public static ReactiveProperty<bool> IsOpen
-        {
-            get { return Instance.isOpen_; }
-        }
-
-        /// <summary>
-        /// ƒm[ƒg“ü—ÍƒL[•ÏX—v‹ƒCƒxƒ“ƒg
-        /// </summary>
-        public static Subject<Unit> RequestForChangeInputNoteKeyCode
-        {
-            get { return Instance.requestForChangeInputNoteKeyCode_; }
-        }
-
-        /// <summary>
-        /// ƒuƒƒbƒN”‚ÌÅ‘å’l
-        /// </summary>
+        public static ReactiveProperty<string> WorkSpacePath { get { return Instance.workSpacePath_; } }
+        public static ReactiveProperty<List<KeyCode>> NoteInputKeyCodes { get { return Instance.noteInputKeyCodes_; } }
+        public static ReactiveProperty<int> SelectedBlock { get { return Instance.selectedBlock_; } }
+        public static ReactiveProperty<bool> IsOpen { get { return Instance.isOpen_; } }
+        public static Subject<Unit> RequestForChangeInputNoteKeyCode { get { return Instance.requestForChangeInputNoteKeyCode_; } }
         public static int MaxBlock = 0;
     }
 }

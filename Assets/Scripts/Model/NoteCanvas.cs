@@ -1,15 +1,4 @@
-// ========================================
-//
-// NoteCanvas.cs
-//
-// ========================================
-//
-// ƒm[ƒgƒGƒfƒBƒ^‚ÌƒLƒƒƒ“ƒoƒXó‘Ôi•EƒIƒtƒZƒbƒgEƒXƒP[ƒ‹Eƒ}ƒEƒXˆÊ’u‚È‚Çj
-// ‚ğ•Û‚·‚éƒVƒ“ƒOƒ‹ƒgƒ“
-//
-// ========================================
-
-using NoteMaker.Notes;
+ï»¿using NoteMaker.Notes;
 using NoteMaker.Utility;
 using UniRx;
 using UnityEngine;
@@ -18,71 +7,25 @@ namespace NoteMaker.Model
 {
     public class NoteCanvas : SingletonMonoBehaviour<NoteCanvas>
     {
-        ReactiveProperty<float> width_ = new ReactiveProperty<float>();                             // ƒLƒƒƒ“ƒoƒX‚Ì•
-        ReactiveProperty<float> offsetX_ = new ReactiveProperty<float>();                           // ƒLƒƒƒ“ƒoƒX‚Ì X ƒIƒtƒZƒbƒg
-        ReactiveProperty<float> scaleFactor_ = new ReactiveProperty<float>();                       // •`‰æƒXƒP[ƒ‹
-        ReactiveProperty<bool> isMouseOverNotesRegion_ = new ReactiveProperty<bool>();              // ƒ}ƒEƒX‚ªƒm[ƒg—Ìˆæã‚É‚ ‚é‚©
-        ReactiveProperty<bool> isMouseOverWaveformRegion_ = new ReactiveProperty<bool>();           // ƒ}ƒEƒX‚ª”gŒ`—Ìˆæã‚É‚ ‚é‚©
-        ReactiveProperty<NotePosition> closestNotePosition_ = new ReactiveProperty<NotePosition>(); // ƒ}ƒEƒX‚ÉÅ‚à‹ß‚¢ƒm[ƒgˆÊ’u
+        ReactiveProperty<float> width_ = new ReactiveProperty<float>();
+        ReactiveProperty<float> offsetX_ = new ReactiveProperty<float>();
+        ReactiveProperty<float> scaleFactor_ = new ReactiveProperty<float>();
+        ReactiveProperty<bool> isMouseOverNotesRegion_ = new ReactiveProperty<bool>();
+        ReactiveProperty<bool> isMouseOverWaveformRegion_ = new ReactiveProperty<bool>();
+        ReactiveProperty<NotePosition> closestNotePosition_ = new ReactiveProperty<NotePosition>();
 
-        /// <summary>
-        /// ƒLƒƒƒ“ƒoƒX‚Ì•
-        /// </summary>
-        public static ReactiveProperty<float> Width
-        {
-            get { return Instance.width_; }
-        }
+        public static ReactiveProperty<float> Width { get { return Instance.width_; } }
+        public static ReactiveProperty<float> OffsetX { get { return Instance.offsetX_; } }
+        public static ReactiveProperty<float> ScaleFactor { get { return Instance.scaleFactor_; } }
+        public static ReactiveProperty<bool> IsMouseOverNotesRegion { get { return Instance.isMouseOverNotesRegion_; } }
+        public static ReactiveProperty<bool> IsMouseOverWaveformRegion { get { return Instance.isMouseOverWaveformRegion_; } }
+        public static ReactiveProperty<NotePosition> ClosestNotePosition { get { return Instance.closestNotePosition_; } }
 
-        /// <summary>
-        /// ƒLƒƒƒ“ƒoƒX‚Ì X ƒIƒtƒZƒbƒg
-        /// </summary>
-        public static ReactiveProperty<float> OffsetX
-        {
-            get { return Instance.offsetX_; }
-        }
-
-        /// <summary>
-        /// •`‰æƒXƒP[ƒ‹
-        /// </summary>
-        public static ReactiveProperty<float> ScaleFactor
-        {
-            get { return Instance.scaleFactor_; }
-        }
-
-        /// <summary>
-        /// ƒ}ƒEƒX‚ªƒm[ƒg—Ìˆæã‚É‚ ‚é‚©‚Ç‚¤‚©
-        /// </summary>
-        public static ReactiveProperty<bool> IsMouseOverNotesRegion
-        {
-            get { return Instance.isMouseOverNotesRegion_; }
-        }
-
-        /// <summary>
-        /// ƒ}ƒEƒX‚ª”gŒ`—Ìˆæã‚É‚ ‚é‚©‚Ç‚¤‚©
-        /// </summary>
-        public static ReactiveProperty<bool> IsMouseOverWaveformRegion
-        {
-            get { return Instance.isMouseOverWaveformRegion_; }
-        }
-
-        /// <summary>
-        /// ƒ}ƒEƒX‚ÉÅ‚à‹ß‚¢ƒm[ƒgˆÊ’u
-        /// </summary>
-        public static ReactiveProperty<NotePosition> ClosestNotePosition
-        {
-            get { return Instance.closestNotePosition_; }
-        }
-
-        /// <summary>
-        /// ‰æ–Ê•‚Ì•Ï‰»‚É‰‚¶‚ÄƒXƒP[ƒ‹‚ğ©“®’²®‚·‚éB
-        /// </summary>
         void Awake()
         {
             this.ObserveEveryValueChanged(_ => Screen.width)
                 .DistinctUntilChanged()
                 .Subscribe(w => ScaleFactor.Value = 1280f / w);
-
-            // ˆÈ‘O‚ÌƒR[ƒh:
             // .Subscribe(w => NoteCanvas.ScaleFactor.Value = canvasScaler.referenceResolution.x / w);
         }
     }

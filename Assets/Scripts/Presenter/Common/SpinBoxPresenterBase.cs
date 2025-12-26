@@ -1,19 +1,5 @@
-// ========================================
-//
-// SpinBoxPresenterBase.cs
-//
-// ========================================
-//
-// ”’l“ü—Í—pƒXƒsƒ“ƒ{ƒbƒNƒXiInputField + ‘Œ¸ƒ{ƒ^ƒ“j‚Ì‹¤’Êˆ—‚ğ’ñ‹Ÿ‚·‚é’ŠÛƒNƒ‰ƒXB
-// Eƒ{ƒ^ƒ“‰Ÿ‰ºi’P‰Ÿ‚µ / ’·‰Ÿ‚µj
-// EƒeƒLƒXƒg“ü—Í
-// E’l‚ÌƒNƒ‰ƒ“ƒv
-// EUndo / Redo ‘Î‰
-// ‚ğ UniRx ‚ğ—p‚¢‚ÄÀ‘•‚·‚éB
-//
-// ========================================
-
-using NoteMaker.Common;
+ï»¿using NoteMaker.Common;
+using NoteMaker.Utility;
 using System;
 using System.Text.RegularExpressions;
 using UniRx;
@@ -25,27 +11,29 @@ namespace NoteMaker.Presenter
 {
     public abstract class SpinBoxPresenterBase : MonoBehaviour
     {
-        [SerializeField] InputField inputField = default;                   // ”’l“ü—ÍƒtƒB[ƒ‹ƒh
-        [SerializeField] Button increaseButton = default;                   // ‘‰Áƒ{ƒ^ƒ“
-        [SerializeField] Button decreaseButton = default;                   // Œ¸­ƒ{ƒ^ƒ“
-        [SerializeField] int valueStep = default;                           // ‘Œ¸ƒXƒeƒbƒv
-        [SerializeField] int minValue = default;                            // Å¬’l
-        [SerializeField] int maxValue = default;                            // Å‘å’l
-        [SerializeField] int longPressTriggerMilliseconds = default;        // ’·‰Ÿ‚µ”»’èŠÔ
-        [SerializeField] int continuousPressIntervalMilliseconds = default; // ’·‰Ÿ‚µ‚Ì˜A‘±“ü—ÍŠÔŠu
+        [SerializeField]
+        InputField inputField = default;
+        [SerializeField]
+        Button increaseButton = default;
+        [SerializeField]
+        Button decreaseButton = default;
+        [SerializeField]
+        int valueStep = default;
+        [SerializeField]
+        int minValue = default;
+        [SerializeField]
+        int maxValue = default;
+        [SerializeField]
+        int longPressTriggerMilliseconds = default;
+        [SerializeField]
+        int continuousPressIntervalMilliseconds = default;
 
-        Subject<int> _operateSpinButtonObservable = new Subject<int>();     // ƒ{ƒ^ƒ“‘€ìƒXƒgƒŠ[ƒ€i+step / -step / 0j
+        Subject<int> _operateSpinButtonObservable = new Subject<int>();
 
-        /// <summary>
-        /// ”h¶ƒNƒ‰ƒX‚ªƒoƒCƒ“ƒh‚·‚é ReactiveProperty ‚ğ•Ô‚·B
-        /// </summary>
         protected abstract ReactiveProperty<int> GetReactiveProperty();
 
         void Awake()
         {
-            // -----------------------------
-            // ƒ{ƒ^ƒ“‰Ÿ‰ºƒCƒxƒ“ƒg‚Ì“o˜^
-            // -----------------------------
             increaseButton.AddListener(EventTriggerType.PointerUp, e => _operateSpinButtonObservable.OnNext(0));
             decreaseButton.AddListener(EventTriggerType.PointerUp, e => _operateSpinButtonObservable.OnNext(0));
             increaseButton.AddListener(EventTriggerType.PointerDown, e => _operateSpinButtonObservable.OnNext(valueStep));
@@ -53,50 +41,35 @@ namespace NoteMaker.Presenter
 
             var property = GetReactiveProperty();
 
-            // ReactiveProperty ¨ InputField
             property.Subscribe(x => inputField.text = x.ToString());
 
-            // -----------------------------
-            // InputField ‚©‚ç‚Ì’lXV
-            // -----------------------------
             var updateValueFromInputFieldStream = inputField.OnValueChangedAsObservable()
-                .Where(x => Regex.IsMatch(x, @"^[0-9]+$")) // ”š‚Ì‚İ
+                .Where(x => Regex.IsMatch(x, @"^[0-9]+$"))
                 .Select(x => int.Parse(x));
 
-            // -----------------------------
-            // ƒ{ƒ^ƒ“‘€ì‚©‚ç‚Ì’lXV
-            // -----------------------------
             var updateValueFromSpinButtonStream = _operateSpinButtonObservable
-                // ’·‰Ÿ‚µ”»’è
                 .Throttle(TimeSpan.FromMilliseconds(longPressTriggerMilliseconds))
                 .Where(delta => delta != 0)
-                // ’·‰Ÿ‚µ’†‚Íˆê’èŠÔŠu‚Å˜A‘±“ü—Í
-                .SelectMany(delta =>
-                    Observable.Interval(TimeSpan.FromMilliseconds(continuousPressIntervalMilliseconds))
-                        .TakeUntil(_operateSpinButtonObservable.Where(d => d == 0))
-                        .Select(_ => delta))
-                // ’P‰Ÿ‚µ‚àŠÜ‚ß‚é
+                .SelectMany(delta => Observable.Interval(TimeSpan.FromMilliseconds(continuousPressIntervalMilliseconds))
+                    .TakeUntil(_operateSpinButtonObservable.Where(d => d == 0))
+                    .Select(_ => delta))
                 .Merge(_operateSpinButtonObservable.Where(d => d != 0))
                 .Select(delta => property.Value + delta);
 
             var isUndoRedoAction = false;
 
-            // -----------------------------
-            // ’lXViInputField + ƒ{ƒ^ƒ“j
-            // -----------------------------
             Observable.Merge(
                     updateValueFromSpinButtonStream,
                     updateValueFromInputFieldStream)
-                .Select(x => Mathf.Clamp(x, minValue, maxValue)) // ”ÍˆÍ§ŒÀ
+                .Select(x => Mathf.Clamp(x, minValue, maxValue))
                 .DistinctUntilChanged()
                 .Where(_ => isUndoRedoAction ? (isUndoRedoAction = false) : true)
                 .Select(x => new { current = x, prev = property.Value })
-                .Subscribe(x =>
-                    EditCommandManager.Do(
-                        new Command(
-                            () => property.Value = x.current,
-                            () => { isUndoRedoAction = true; property.Value = x.prev; },
-                            () => { isUndoRedoAction = true; property.Value = x.current; })))
+                .Subscribe(x => EditCommandManager.Do(
+                    new Command(
+                        () => property.Value = x.current,
+                        () => { isUndoRedoAction = true; property.Value = x.prev; },
+                        () => { isUndoRedoAction = true; property.Value = x.current; })))
                 .AddTo(this);
         }
     }

@@ -1,18 +1,4 @@
-// ========================================
-//
-// MusicLoader.cs
-//
-// ========================================
-//
-// Šy‹Èƒtƒ@ƒCƒ‹iwavj‚Æ•ˆ–Êƒf[ƒ^ijsonj‚Ì“Ç‚İ‚İA
-// ‚¨‚æ‚ÑƒGƒfƒBƒ^‘S‘Ì‚Ì‰Šú‰»ˆ—‚ğs‚¤ƒNƒ‰ƒXB
-// E‰¹ºƒtƒ@ƒCƒ‹‚Ìƒ[ƒh
-// E•ˆ–Êƒf[ƒ^‚Ìƒ[ƒh
-// EƒGƒfƒBƒ^ó‘Ô‚ÌƒŠƒZƒbƒg
-//
-// ========================================
-
-using NoteMaker.Model;
+ï»¿using NoteMaker.Model;
 using NoteMaker.Notes;
 using System.Collections;
 using System.IO;
@@ -23,22 +9,16 @@ namespace NoteMaker.Presenter
 {
     public class MusicLoader : MonoBehaviour
     {
-        private void Awake()
+        void Awake()
         {
             ResetEditor();
         }
 
-        /// <summary>
-        /// Šy‹Èƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚ŞiƒRƒ‹[ƒ`ƒ“ŠJnjB
-        /// </summary>
         public void Load(string fileName)
         {
             StartCoroutine(LoadMusic(fileName));
         }
 
-        /// <summary>
-        /// ‰¹ºƒtƒ@ƒCƒ‹iwavj‚ğ“Ç‚İ‚İA•ˆ–Êƒf[ƒ^‚à“Ç‚İ‚ŞB
-        /// </summary>
         IEnumerator LoadMusic(string fileName)
         {
             using (var www = new WWW("file:///" + Path.Combine(MusicSelector.DirectoryPath.Value, fileName)))
@@ -51,7 +31,7 @@ namespace NoteMaker.Presenter
 
                 if (Audio.Source.clip == null)
                 {
-                    // “Ç‚İ‚İ¸”s‚Ìˆ—i–¢À‘•j
+                    // TODO: èª­ã¿è¾¼ã¿å¤±æ•—æ™‚ã®å‡¦ç†
                 }
                 else
                 {
@@ -62,14 +42,11 @@ namespace NoteMaker.Presenter
             }
         }
 
-        /// <summary>
-        /// •ˆ–Êƒf[ƒ^ijsonj‚ğ“Ç‚İ‚ŞB
-        /// </summary>
-        public void LoadEditData()
+        void LoadEditData()
         {
             var fileName = Path.ChangeExtension(EditData.Name.Value, "json");
-            var directionPath = Path.Combine(Path.GetDirectoryName(MusicSelector.DirectoryPath.Value), "Notes");
-            var filePath = Path.Combine(directionPath, fileName);
+            var directoryPath = Path.Combine(Path.GetDirectoryName(MusicSelector.DirectoryPath.Value), "Notes");
+            var filePath = Path.Combine(directoryPath, fileName);
 
             if (File.Exists(filePath))
             {
@@ -78,26 +55,20 @@ namespace NoteMaker.Presenter
             }
         }
 
-        /// <summary>
-        /// ƒGƒfƒBƒ^‘S‘Ì‚Ìó‘Ô‚ğ‰Šú‰»‚·‚éB
-        /// </summary>
         public void ResetEditor()
         {
             Audio.TimeSamples.Value = 0;
             Audio.SmoothedTimeSamples.Value = 0;
             Audio.IsPlaying.Value = false;
             Audio.Source.clip = null;
-
             EditState.NoteType.Value = NoteTypes.Single;
             EditState.LongNoteTailPosition.Value = NotePosition.None;
-
             EditData.BPM.Value = 120;
             EditData.OffsetSamples.Value = 0;
-            EditData.Name.Value = "Note Maker";
+            EditData.Name.Value = "Note Editor";
             EditData.MaxBlock.Value = Settings.MaxBlock;
             EditData.LPB.Value = 4;
 
-            // Šù‘¶ƒm[ƒg‚Ì”jŠü
             foreach (var note in EditData.Notes.Values)
             {
                 note.Dispose();

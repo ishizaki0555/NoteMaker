@@ -1,23 +1,10 @@
-// ========================================
-//
-// FileItemInfo.cs
-//
-// ========================================
-//
-// ƒtƒ@ƒCƒ‹ƒuƒ‰ƒEƒU—p‚Ì€–Úî•ñiƒfƒBƒŒƒNƒgƒŠ‚©‚Ç‚¤‚©Eƒtƒ‹ƒpƒXj‚ğ•Û‚·‚éƒNƒ‰ƒX
-//
-// ========================================
-
-namespace NoteMaker.Model
+ï»¿namespace NoteMaker.Model
 {
     public class FileItemInfo
     {
-        public bool isDirectory;   // ƒfƒBƒŒƒNƒgƒŠ‚©‚Ç‚¤‚©
-        public string fullName;    // ƒtƒ‹ƒpƒX‚Ü‚½‚Íƒtƒ@ƒCƒ‹–¼
+        public bool isDirectory;
+        public string fullName;
 
-        /// <summary>
-        /// ƒfƒBƒŒƒNƒgƒŠ‚©‚Ç‚¤‚©‚Æƒtƒ‹ƒpƒX‚ğw’è‚µ‚Ä€–Úî•ñ‚ğ¶¬‚·‚éB
-        /// </summary>
         public FileItemInfo(bool isDirectory, string fullName)
         {
             this.isDirectory = isDirectory;

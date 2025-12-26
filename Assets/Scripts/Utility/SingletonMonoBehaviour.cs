@@ -1,36 +1,19 @@
-// ========================================
-//
-// SingletonMonoBehaviour.cs
-//
-// ========================================
-//
-// MonoBehaviour ‚ğŒp³‚µ‚½ƒVƒ“ƒOƒ‹ƒgƒ“Šî’êƒNƒ‰ƒX
-//
-// ========================================
-
-using UnityEngine;
+ï»¿using UnityEngine;
 
 namespace NoteMaker.Utility
 {
     public class SingletonMonoBehaviour<T> : MonoBehaviour where T : MonoBehaviour
     {
-        static T instance_;   // ƒVƒ“ƒOƒ‹ƒgƒ“ƒCƒ“ƒXƒ^ƒ“ƒX
-
-        /// <summary>
-        /// ƒVƒ“ƒOƒ‹ƒgƒ“ƒCƒ“ƒXƒ^ƒ“ƒX‚ğæ“¾‚·‚éB
-        /// ‘¶İ‚µ‚È‚¢ê‡‚ÍƒV[ƒ““à‚©‚çŒŸõ‚µAŒ©‚Â‚©‚ç‚È‚¯‚ê‚ÎV‹K¶¬‚·‚éB
-        /// </summary>
+        static T instance_;
         public static T Instance
         {
             get
             {
-                // ‚Ü‚¾ƒCƒ“ƒXƒ^ƒ“ƒX‚ª‘¶İ‚µ‚È‚¢ê‡‚ÍƒV[ƒ“‚©‚çŒŸõ‚·‚é
                 if (instance_ == null)
                 {
-                    instance_ = FindAnyObjectByType<T>();
+                    instance_ = FindObjectOfType<T>();
                 }
 
-                // Œ©‚Â‚©‚ç‚È‚¯‚ê‚ÎV‚µ‚¢ GameObject ‚ğ¶¬‚µ‚ÄƒAƒ^ƒbƒ`‚·‚é
                 return instance_ ?? new GameObject(typeof(T).FullName).AddComponent<T>();
             }
         }

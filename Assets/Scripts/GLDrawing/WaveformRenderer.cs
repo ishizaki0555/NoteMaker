@@ -1,15 +1,4 @@
-// ========================================
-//
-// WaveformRenderer.cs
-//
-// ========================================
-//
-// ”gŒ`iWaveformj‚ğ RawImage ‚É•`‰æ‚·‚éƒNƒ‰ƒXB
-// AudioClip ‚ÌƒTƒ“ƒvƒ‹‚ğæ“¾‚µATexture2D ‚É‰Â‹‰»‚·‚éB
-//
-// ========================================
-
-using NoteMaker.Model;
+ï»¿using NoteMaker.Model;
 using System.Linq;
 using UniRx;
 using UnityEngine;
@@ -20,66 +9,49 @@ namespace NoteMaker.GLDrawing
     public class WaveformRenderer : MonoBehaviour
     {
         [SerializeField]
-        RawImage image = default;   // ”gŒ`‚ğ•\¦‚·‚é UI
+        RawImage image = default;
 
-        Texture2D texture;          // ”gŒ`•`‰æ—pƒeƒNƒXƒ`ƒƒ
+        Texture2D texture;
 
-        int imageWidth = 1280;      // ƒeƒNƒXƒ`ƒƒ‰¡•
-        float[] samples = new float[500000]; // ƒTƒ“ƒvƒ‹æ“¾—pƒoƒbƒtƒ@
+        int imageWidth = 1280;
+        float[] samples = new float[500000];
 
-        float cachedCanvasWidth = 0; // ‘O‰ñ‚ÌƒLƒƒƒ“ƒoƒX•
-        float cachedTimeSamples = 0; // ‘O‰ñ‚ÌƒTƒ“ƒvƒ‹ˆÊ’u
+        float cachedCanvasWidth = 0;
+        float cachedTimeSamples = 0;
 
-        /// <summary>
-        /// ‰Šú‰»ˆ—BƒeƒNƒXƒ`ƒƒ‚ğ¶¬‚µA”ñ•\¦‚ÌƒŠƒZƒbƒgˆ—‚ğ“o˜^‚·‚éB
-        /// </summary>
         void Start()
         {
             texture = new Texture2D(imageWidth, 1);
             image.texture = texture;
             ResetTexture();
 
-            // ”gŒ`•\¦‚ª OFF ‚É‚È‚Á‚½‚çƒeƒNƒXƒ`ƒƒ‚ğƒNƒŠƒA
             EditorState.WaveformDisplayEnabled
                 .Where(enabled => !enabled)
                 .Subscribe(_ => ResetTexture());
         }
 
-        /// <summary>
-        /// –ˆƒtƒŒ[ƒ€A”gŒ`‚ÌXV‚ª•K—v‚È‚ç•`‰æ‚·‚éB
-        /// </summary>
         void LateUpdate()
         {
-            // ‰¹º‚ª‚È‚¢ or ”gŒ`•\¦‚ª OFF ‚Ìê‡‚Í•`‰æ‚µ‚È‚¢
             if (Audio.Source.clip == null || !EditorState.WaveformDisplayEnabled.Value)
                 return;
 
-            // Œ»İ‚ÌƒTƒ“ƒvƒ‹ˆÊ’ui”ÍˆÍ“à‚Éû‚ß‚éj
             var timeSamples = Mathf.Min(Audio.SmoothedTimeSamples.Value, Audio.Source.clip.samples - 1);
 
-            // XV‚ª•s—v‚È‚çƒXƒLƒbƒv
             if (!HasUpdate(timeSamples))
                 return;
 
-            // ƒLƒƒƒbƒVƒ…XV
             UpdateCache(timeSamples);
 
-            // ƒTƒ“ƒvƒ‹ƒf[ƒ^‚ğæ“¾
             Audio.Source.clip.GetData(samples, Mathf.RoundToInt(timeSamples));
 
             int textureX = 0;
             float maxSample = 0;
-
-            // ‰æ–Ê•‚É‰‚¶‚ÄƒTƒ“ƒvƒ‹‚ğŠÔˆø‚­
             int skipSamples = Mathf.RoundToInt(1 / (NoteCanvas.Width.Value * 0.5f / Audio.Source.clip.samples));
 
-            // ”gŒ`‚ğƒeƒNƒXƒ`ƒƒ‚É•`‰æ
             for (int i = 0, l = samples.Length; textureX < imageWidth && i < l; i++)
             {
-                // Å‘å’l‚ğ‹L˜^iƒs[ƒNŒŸoj
                 maxSample = Mathf.Max(maxSample, samples[i]);
 
-                // ˆê’èƒTƒ“ƒvƒ‹‚²‚Æ‚É•`‰æ
                 if (i % skipSamples == 0)
                 {
                     texture.SetPixel(textureX, 0, new Color(maxSample, 0, 0));
@@ -91,28 +63,17 @@ namespace NoteMaker.GLDrawing
             texture.Apply();
         }
 
-        /// <summary>
-        /// ƒeƒNƒXƒ`ƒƒ‚ğƒNƒŠƒA‚·‚éB
-        /// </summary>
         void ResetTexture()
         {
             texture.SetPixels(Enumerable.Range(0, imageWidth).Select(_ => Color.clear).ToArray());
             texture.Apply();
         }
 
-        /// <summary>
-        /// ”gŒ`‚ÌÄ•`‰æ‚ª•K—v‚©‚Ç‚¤‚©‚ğ”»’è‚·‚éB
-        /// </summary>
         bool HasUpdate(float timeSamples)
         {
-            // ƒLƒƒƒ“ƒoƒX• or ƒTƒ“ƒvƒ‹ˆÊ’u‚ª•Ï‚í‚Á‚½ê‡‚ÉXV
-            return cachedCanvasWidth != NoteCanvas.Width.Value ||
-                   cachedTimeSamples != timeSamples;
+            return cachedCanvasWidth != NoteCanvas.Width.Value || cachedTimeSamples != timeSamples;
         }
 
-        /// <summary>
-        /// ‘O‰ñ‚Ìó‘Ô‚ğƒLƒƒƒbƒVƒ…‚·‚éB
-        /// </summary>
         void UpdateCache(float timeSamples)
         {
             cachedCanvasWidth = NoteCanvas.Width.Value;

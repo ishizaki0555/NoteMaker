@@ -1,29 +1,16 @@
-// ========================================
-//
-// Geometry.cs
-//
-// ========================================
-//
-// GL •`‰æ—p‚ÌF‚Æ’¸“_î•ñ‚ğ•Û‚·‚éƒNƒ‰ƒX
-//
-// ========================================
-
-using UnityEngine;
+ï»¿using UnityEngine;
 
 namespace NoteMaker.GLDrawing
 {
     public class Geometry
     {
-        public Color color;          // •`‰æF
-        public Vector3[] vertices;   // ’¸“_”z—ñ
+        public Color color;
+        public Vector3[] vertices;
 
-        /// <summary>
-        /// ’¸“_”z—ñ‚ÆF‚ğw’è‚µ‚Ä Geometry ‚ğ¶¬‚·‚éB
-        /// </summary>
         public Geometry(Vector3[] vertices, Color color)
         {
-            this.vertices = vertices;
             this.color = color;
+            this.vertices = vertices;
         }
     }
 }

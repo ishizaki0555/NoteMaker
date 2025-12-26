@@ -1,15 +1,4 @@
-// ========================================
-//
-// EditCommandManager.cs
-//
-// ========================================
-//
-// •ÒW‘€ìiƒm[ƒg’Ç‰ÁEíœE•ÏX‚È‚Çj‚Ì Undo / Redo ‚ğŠÇ—‚·‚éƒNƒ‰ƒXB
-// CommandManager ‚ğƒ‰ƒbƒv‚µACtrl+Z / Ctrl+Y ‚É‚æ‚é‘€ì‚ğ’ñ‹Ÿ‚·‚éB
-//
-// ========================================
-
-using NoteMaker.Common;
+ï»¿using NoteMaker.Common;
 using NoteMaker.Model;
 using NoteMaker.Utility;
 using UniRx;
@@ -20,43 +9,24 @@ namespace NoteMaker.Presenter
 {
     public class EditCommandManager : SingletonMonoBehaviour<EditCommandManager>
     {
-        CommandManager commandManager = new CommandManager(); // Undo / Redo ŠÇ—ƒNƒ‰ƒX
+        CommandManager commandManager = new CommandManager();
 
-        /// <summary>
-        /// Undo / Redo ‚Ì“ü—ÍŠÄ‹‚ÆA‰¹ºƒ[ƒh‚Ì‰Šú‰»‚ğİ’è‚·‚éB
-        /// </summary>
-        private void Awake()
+        void Awake()
         {
-            // ‰¹ºƒ[ƒhŒã‚ÉƒRƒ}ƒ“ƒh—š—ğ‚ğƒNƒŠƒA
             Audio.OnLoad
                 .DelayFrame(1)
                 .Subscribe(_ => Clear());
 
-            // Ctrl + Z ¨ Undo
             this.UpdateAsObservable()
                 .Where(_ => KeyInput.CtrlPlus(KeyCode.Z))
                 .Subscribe(_ => commandManager.Undo());
 
-            // Ctrl + Y ¨ Redo
             this.UpdateAsObservable()
                 .Where(_ => KeyInput.CtrlPlus(KeyCode.Y))
                 .Subscribe(_ => commandManager.Redo());
         }
 
-        /// <summary>
-        /// ƒRƒ}ƒ“ƒh‚ğÀs‚µAUndo ƒXƒ^ƒbƒN‚ÉÏ‚ŞB
-        /// </summary>
-        public static void Do(Command command)
-        {
-            Instance.commandManager.Do(command);
-        }
-
-        /// <summary>
-        /// ƒRƒ}ƒ“ƒh—š—ğ‚ğƒNƒŠƒA‚·‚éB
-        /// </summary>
-        public static void Clear()
-        {
-            Instance.commandManager.Crear();
-        }
+        static public void Do(Command command) { Instance.commandManager.Do(command); }
+        static public void Clear() { Instance.commandManager.Clear(); }
     }
 }

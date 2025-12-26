@@ -1,19 +1,6 @@
-// ========================================
-//
-// EditSectionPresenter.cs
-//
-// ========================================
-//
-// ƒZƒNƒVƒ‡ƒ“”ÍˆÍipoint1 ` point2j‚Ì‰Â‹‰»‚ğs‚¤ PresenterB
-// E2 ‚Â‚Ìƒnƒ“ƒhƒ‹ˆÊ’u‚©‚ç‹éŒ`—Ìˆæ‚ğZo‚µ‚Ä GL •`‰æ
-// EƒXƒ‰ƒCƒ_[ã‚Ìƒ}[ƒJ[ˆÊ’u‚Æ•‚ğXV
-// Eƒnƒ“ƒhƒ‹‚ÌŒü‚«i¶‰E”½“]j‚ğ’²®
-//
-// ========================================
-
+ï»¿using NoteMaker.GLDrawing;
 using NoteMaker.Model;
 using NoteMaker.Utility;
-using NoteMaker.GLDrawing;
 using System.Linq;
 using UniRx;
 using UnityEngine;
@@ -22,66 +9,57 @@ namespace NoteMaker.Presenter
 {
     public class EditSectionPresenter : MonoBehaviour
     {
-        [SerializeField] RectTransform markerRect = default;                     // ƒZƒNƒVƒ‡ƒ“‹éŒ`‚Ì UI ƒTƒCƒYQÆ
-        [SerializeField] EditSectionHandlePresenter point1 = default;            // ¶‰E‚Ç‚¿‚ç‚É‚à‚È‚è“¾‚éƒnƒ“ƒhƒ‹1
-        [SerializeField] EditSectionHandlePresenter point2 = default;            // ƒnƒ“ƒhƒ‹2
-        [SerializeField] RectTransform playbackPositionSliderRectTransform = default; // ƒXƒ‰ƒCƒ_[‘S‘Ì
-        [SerializeField] RectTransform sliderMarker = default;                   // ƒXƒ‰ƒCƒ_[ã‚ÌƒZƒNƒVƒ‡ƒ“•\¦
-        [SerializeField] Color markerColor = default;                            // ƒZƒNƒVƒ‡ƒ“‹éŒ`‚ÌF
+        [SerializeField]
+        RectTransform markerRect = default;
+        [SerializeField]
+        EditSectionHandlePresenter point1 = default;
+        [SerializeField]
+        EditSectionHandlePresenter point2 = default;
+        [SerializeField]
+        RectTransform playbackPositionSliderRectTransform = default;
+        [SerializeField]
+        RectTransform sliderMarker = default;
+        [SerializeField]
+        Color markerColor = default;
 
-        Geometry drawData = new Geometry(
-            Enumerable.Range(0, 4).Select(_ => Vector3.zero).ToArray(),
-            Color.clear);
+        Geometry drawData = new Geometry(Enumerable.Range(0, 4).Select(_ => Vector3.zero).ToArray(), Color.clear);
 
         void Awake()
         {
             Audio.OnLoad.First().Subscribe(_ => Init());
         }
 
-        /// <summary>
-        /// ƒZƒNƒVƒ‡ƒ“”ÍˆÍ‚Ì•`‰æEƒXƒ‰ƒCƒ_[XVˆ—‚ğ‰Šú‰»B
-        /// </summary>
         void Init()
         {
+
             var sliderWidth = playbackPositionSliderRectTransform.sizeDelta.x;
 
-            // point1 / point2 ‚ÌˆÊ’u‚ª•Ï‚í‚é‚½‚Ñ‚É‹éŒ`‚ÆƒXƒ‰ƒCƒ_[ƒ}[ƒJ[‚ğXV
-            Observable.Merge(point1.Position, point2.Position)
+            Observable.Merge(
+                    point1.Position,
+                    point2.Position)
                 .Subscribe(_ =>
                 {
-                    // ----------------------------------------
-                    // ƒnƒ“ƒhƒ‹‚Ì¶‰E‚ğŒˆ’èi¬‚³‚¢•û‚ª startj
-                    // ----------------------------------------
                     var sortedPoints = new[] { point1, point2 }.OrderBy(p => p.Position.Value);
                     var start = sortedPoints.First();
                     var end = sortedPoints.Last();
 
-                    // ƒnƒ“ƒhƒ‹‚ÌŒü‚«‚ğ¶‰E”½“]
-                    var scaleStart = start.HandleRectTransform.localScale;
-                    scaleStart.x = -1;
-                    start.HandleRectTransform.localScale = scaleStart;
+                    var scale = start.HandleRectTransform.localScale;
+                    scale.x = -1;
+                    start.HandleRectTransform.localScale = scale;
+                    var scale1 = end.HandleRectTransform.localScale;
+                    scale1.x = 1;
+                    end.HandleRectTransform.localScale = scale1;
 
-                    var scaleEnd = end.HandleRectTransform.localScale;
-                    scaleEnd.x = 1;
-                    end.HandleRectTransform.localScale = scaleEnd;
-
-                    // ----------------------------------------
-                    // ƒLƒƒƒ“ƒoƒXã‚Ì‹éŒ`À•W‚ğZo
-                    // ----------------------------------------
                     var markerCanvasWidth = end.Position.Value - start.Position.Value;
-
                     var startPos = start.Position.Value / NoteCanvas.ScaleFactor.Value + Screen.width / 2f;
                     var halfScreenHeight = Screen.height / 2f;
-                    var halfHeight = markerRect.sizeDelta.y / NoteCanvas.ScaleFactor.Value / 2f;
+                    var halfHeight = markerRect.sizeDelta.y / NoteCanvas.ScaleFactor.Value / 2;
 
                     var min = new Vector2(startPos, halfScreenHeight - halfHeight);
-                    var max = new Vector2(startPos + markerCanvasWidth / NoteCanvas.ScaleFactor.Value,
-                                          halfScreenHeight + halfHeight);
+                    var max = new Vector2(startPos + markerCanvasWidth / NoteCanvas.ScaleFactor.Value, halfScreenHeight + halfHeight);
 
-                    // GL •`‰æ—p‚Ì‹éŒ`ƒf[ƒ^XV
                     drawData = new Geometry(
-                        new[]
-                        {
+                        new[] {
                             new Vector3(min.x, max.y, 0),
                             new Vector3(max.x, max.y, 0),
                             new Vector3(max.x, min.y, 0),
@@ -89,19 +67,13 @@ namespace NoteMaker.Presenter
                         },
                         markerColor);
 
-                    // ----------------------------------------
-                    // ƒXƒ‰ƒCƒ_[ã‚Ìƒ}[ƒJ[XV
-                    // ----------------------------------------
                     var sliderMarkerSize = sliderMarker.sizeDelta;
                     sliderMarkerSize.x = sliderWidth * markerCanvasWidth / NoteCanvas.Width.Value;
                     sliderMarker.sizeDelta = sliderMarkerSize;
 
                     if (NoteCanvas.Width.Value > 0)
                     {
-                        var startPer =
-                            (start.Position.Value - ConvertUtils.SamplesToCanvasPositionX(0))
-                            / NoteCanvas.Width.Value;
-
+                        var startPer = (start.Position.Value - ConvertUtils.SamplesToCanvasPositionX(0)) / NoteCanvas.Width.Value;
                         var sliderMarkerPos = sliderMarker.localPosition;
                         sliderMarkerPos.x = sliderWidth * startPer - sliderWidth / 2f;
                         sliderMarker.localPosition = sliderMarkerPos;
@@ -109,9 +81,6 @@ namespace NoteMaker.Presenter
                 });
         }
 
-        /// <summary>
-        /// GL •`‰æ‚Í LateUpdate ‚Ås‚¤B
-        /// </summary>
         void LateUpdate()
         {
             GLQuadDrawer.Draw(drawData);

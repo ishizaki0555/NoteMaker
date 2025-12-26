@@ -1,4 +1,4 @@
-using NoteMaker.Model;
+﻿using NoteMaker.Model;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,9 +7,10 @@ namespace NoteMaker.Presenter
 {
     public class MusicNameTextPresenter : MonoBehaviour
     {
-        [SerializeField] Text musicNameText = default;
+        [SerializeField]
+        Text musicNameText = default;
 
-        private void Awake()
+        void Awake()
         {
             EditData.Name.SubscribeToText(musicNameText);
         }

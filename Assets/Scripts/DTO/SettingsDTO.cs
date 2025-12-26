@@ -1,35 +1,21 @@
-// ========================================
-//
-// SettingDTO.cs
-//
-// ========================================
-//
-// ƒAƒvƒŠ‘S‘Ì‚Ìİ’èƒf[ƒ^‚ğ•Û‚·‚é DTO
-//
-// ========================================
-
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 
 namespace NoteMaker.DTO
 {
     [System.Serializable]
     public class SettingsDTO
     {
-        public string workSpacePath;        // ƒ[ƒNƒXƒy[ƒX‚ÌƒpƒX
-        public int maxBlock;                // Å‘åƒuƒƒbƒN”
-        public List<int> noteInputKeyCodes; // ƒm[ƒg“ü—Í‚Ég‚¤ƒL[ƒR[ƒhˆê——
+        public string workSpacePath;
+        public int maxBlock;
+        public List<int> noteInputKeyCodes;
 
-        /// <summary>
-        /// ƒfƒtƒHƒ‹ƒgİ’è‚ğ¶¬‚µ‚Ä•Ô‚·B
-        /// İ’èƒtƒ@ƒCƒ‹‚ª‘¶İ‚µ‚È‚¢ê‡‚È‚Ç‚Ég—p‚³‚ê‚éB
-        /// </summary>
         public static SettingsDTO GetDefaultSettings()
         {
             return new SettingsDTO
             {
                 workSpacePath = "",
                 maxBlock = 5,
-                noteInputKeyCodes = new List<int> { 114, 99, 103, 121, 98 } // ƒfƒtƒHƒ‹ƒgƒL[
+                noteInputKeyCodes = new List<int> { 114, 99, 103, 121, 98 }
             };
         }
     }

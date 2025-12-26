@@ -1,14 +1,4 @@
-// ========================================
-//
-// BeatNumberRenderer.cs
-//
-// ========================================
-//
-// ””Ô†iBeat Numberj‚ğ•`‰æ‚·‚é‚½‚ß‚Ìƒv[ƒ‹ŠÇ—•t‚«ƒŒƒ“ƒ_ƒ‰[
-//
-// ========================================
-
-using NoteMaker.Utility;
+ï»¿using NoteMaker.Utility;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -18,24 +8,20 @@ namespace NoteMaker.GLDrawing
 {
     public class BeatNumberRenderer : SingletonMonoBehaviour<BeatNumberRenderer>
     {
-        [SerializeField] GameObject beatNumberPrefab = default;             // ””Ô†•\¦—pƒvƒŒƒnƒu
+        [SerializeField]
+        GameObject beatNumberPrefab = default;
 
-        List<RectTransform> rectTransformPool = new List<RectTransform>();  // RectTransform ‚Ìƒv[ƒ‹
-        List<Text> textPool = new List<Text>();                             // Text ‚Ìƒv[ƒ‹
+        List<RectTransform> rectTransformPool = new List<RectTransform>();
+        List<Text> textPool = new List<Text>();
 
-        static int size;                                                    // ƒv[ƒ‹‚Ì‘”
-        static int countPrevActive = 0;                                     // ‘OƒtƒŒ[ƒ€‚Åg—p‚³‚ê‚½”
-        static int countCurrentActive = 0;                                  // ¡ƒtƒŒ[ƒ€‚Åg—p‚³‚ê‚½”
+        static int size;
+        static int countPrevActive = 0;
+        static int countCurrentActive = 0;
 
-        /// <summary>
-        /// w’èˆÊ’u‚É””Ô†‚ğ•`‰æ‚·‚éB
-        /// </summary>
-        public static void Render(Vector3 pos, int number)
+        static public void Render(Vector3 pos, int number)
         {
-            // Šù‘¶ƒv[ƒ‹“à‚É‚Ü‚¾‹ó‚«‚ª‚ ‚éê‡
             if (countCurrentActive < size)
             {
-                // ‘OƒtƒŒ[ƒ€‚æ‚èV‚µ‚­g‚¤ê‡‚ÍƒAƒNƒeƒBƒu‰»
                 if (countCurrentActive >= countPrevActive)
                 {
                     Instance.textPool[countCurrentActive].gameObject.SetActive(true);
@@ -46,11 +32,9 @@ namespace NoteMaker.GLDrawing
             }
             else
             {
-                // ƒv[ƒ‹‚É‹ó‚«‚ª‚È‚¢ê‡‚ÍV‹K¶¬‚µ‚Ä’Ç‰Á
                 var obj = Instantiate(Instance.beatNumberPrefab, pos, Quaternion.identity) as GameObject;
                 obj.transform.SetParent(Instance.transform);
                 obj.transform.localScale = Vector3.one;
-
                 Instance.rectTransformPool.Add(obj.GetComponent<RectTransform>());
                 Instance.textPool.Add(obj.GetComponent<Text>());
                 size++;
@@ -59,21 +43,14 @@ namespace NoteMaker.GLDrawing
             countCurrentActive++;
         }
 
-        /// <summary>
-        /// •`‰æŠJn‚ÉŒÄ‚Ño‚µA‘OƒtƒŒ[ƒ€‚Ìg—p”‚ğ‹L˜^‚·‚éB
-        /// </summary>
-        public static void Begin()
+        static public void Begin()
         {
             countPrevActive = countCurrentActive;
             countCurrentActive = 0;
         }
 
-        /// <summary>
-        /// •`‰æI—¹‚ÉŒÄ‚Ño‚µA•s—v‚ÈƒIƒuƒWƒFƒNƒg‚Ì”ñ•\¦Eíœ‚ğs‚¤B
-        /// </summary>
-        public static void End()
+        static public void End()
         {
-            // ¡ƒtƒŒ[ƒ€‚Åg‚í‚È‚©‚Á‚½•ª‚ğ”ñ•\¦‚É‚·‚é
             if (countCurrentActive < countPrevActive)
             {
                 for (int i = countCurrentActive; i < countPrevActive; i++)
@@ -82,10 +59,8 @@ namespace NoteMaker.GLDrawing
                 }
             }
 
-            // ƒv[ƒ‹‚ª‰ßè‚É‘å‚«‚¢ê‡‚Ííœ‚µ‚Äk¬‚·‚é
             if (countCurrentActive * 2 < size)
             {
-                // —]è•ª‚ğ”jŠü
                 foreach (var text in Instance.textPool.Skip(countCurrentActive + 1))
                 {
                     Destroy(text.gameObject);

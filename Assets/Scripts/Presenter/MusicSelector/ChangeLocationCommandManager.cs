@@ -1,15 +1,4 @@
-// ========================================
-//
-// ChangeLocationCommandManager.cs
-//
-// ========================================
-//
-// ˆÊ’u•ÏXŒn‚ÌƒRƒ}ƒ“ƒhiUndo / Redoj‚ğŠÇ—‚·‚éƒVƒ“ƒOƒ‹ƒgƒ“B
-// CommandManager ‚ğƒ‰ƒbƒv‚µAUI ‚È‚Ç‚©‚çQÆ‚Å‚«‚é CanUndo / CanRedo ‚ğ ReactiveProperty ‚Æ‚µ‚ÄŒöŠJ‚·‚éB
-//
-// ========================================
-
-using NoteMaker.Common;
+ï»¿using NoteMaker.Common;
 using NoteMaker.Utility;
 using UniRx;
 
@@ -17,71 +6,26 @@ namespace NoteMaker.Presenter
 {
     public class ChangeLocationCommandManager : SingletonMonoBehaviour<ChangeLocationCommandManager>
     {
-        CommandManager commandManager = new CommandManager();   // Undo / Redo ŠÇ—ƒNƒ‰ƒX
+        CommandManager commandManager = new CommandManager();
 
-        ReactiveProperty<bool> canRedo;                         // Redo ‚ª‰Â”\‚©‚Ç‚¤‚©
-        ReactiveProperty<bool> canUndo;                         // Undo ‚ª‰Â”\‚©‚Ç‚¤‚©
+        ReactiveProperty<bool> canRedo;
+        ReactiveProperty<bool> canUndo;
 
-        /// <summary>
-        /// Redo ‚ª‰Â”\‚©‚Ç‚¤‚©
-        /// </summary>
-        public static ReactiveProperty<bool> CanRedo
+        static public ReactiveProperty<bool> CanRedo { get { return Instance.canRedo; } }
+        static public ReactiveProperty<bool> CanUndo { get { return Instance.canUndo; } }
+
+        void Awake()
         {
-            get { return Instance.canRedo; }
-        }
-
-        /// <summary>
-        /// Undo ‚ª‰Â”\‚©‚Ç‚¤‚©
-        /// </summary>
-        public static ReactiveProperty<bool> CanUndo
-        {
-            get { return Instance.canUndo; }
-        }
-
-        /// <summary>
-        /// Undo / Redo ó‘Ô‚ÌŠÄ‹‚ğƒZƒbƒgƒAƒbƒv‚·‚éB
-        /// </summary>
-        private void Awake()
-        {
-            // CanUndo() ‚ÌŒ‹‰Ê‚ğŠÄ‹‚µ‚Ä ReactiveProperty ‰»
-            canRedo = this.ObserveEveryValueChanged(_ => commandManager.CanUndo())
+            canRedo = this.ObserveEveryValueChanged(_ => commandManager.CanRedo())
                 .ToReactiveProperty();
 
-            // ¦ Œ»ó CanUndo ‚Æ CanRedo ‚ª“¯‚¶’l‚ğQÆ‚µ‚Ä‚¢‚é‚ªAŒ³ƒR[ƒh‚Ìd—l‚É]‚¤
             canUndo = this.ObserveEveryValueChanged(_ => commandManager.CanUndo())
                 .ToReactiveProperty();
         }
 
-        /// <summary>
-        /// ƒRƒ}ƒ“ƒh‚ğÀs‚µAUndo ƒXƒ^ƒbƒN‚ÉÏ‚ŞB
-        /// </summary>
-        public static void Do(Command command)
-        {
-            Instance.commandManager.Do(command);
-        }
-
-        /// <summary>
-        /// ƒRƒ}ƒ“ƒh—š—ğ‚ğƒNƒŠƒA‚·‚éB
-        /// </summary>
-        public static void Clear()
-        {
-            Instance.commandManager.Crear();
-        }
-
-        /// <summary>
-        /// Undo ‚ğÀs‚·‚éB
-        /// </summary>
-        public static void Undo()
-        {
-            Instance.commandManager.Undo();
-        }
-
-        /// <summary>
-        /// Redo ‚ğÀs‚·‚éB
-        /// </summary>
-        public static void Redo()
-        {
-            Instance.commandManager.Redo();
-        }
+        static public void Do(Command command) { Instance.commandManager.Do(command); }
+        static public void Clear() { Instance.commandManager.Clear(); }
+        static public void Undo() { Instance.commandManager.Undo(); }
+        static public void Redo() { Instance.commandManager.Redo(); }
     }
 }

@@ -1,24 +1,11 @@
-// ========================================
-//
-// NotePosition.cs
-//
-// ========================================
-//
-// ƒm[ƒg‚ÌˆÊ’uî•ñiLPB / num / blockj‚ğ•Û‚·‚éƒNƒ‰ƒX
-//
-// ========================================
-
-using UnityEngine;
+ï»¿using UnityEngine;
 
 namespace NoteMaker.Notes
 {
-    public class NotePosition
+    public struct NotePosition
     {
-        public int LPB, num, block;   // ”q(LPB) / ƒm[ƒg”Ô†(num) / ƒuƒƒbƒN(block)
+        public int LPB, num, block;
 
-        /// <summary>
-        /// LPBEnumEblock ‚ğw’è‚µ‚ÄˆÊ’u‚ğ¶¬‚·‚éB
-        /// </summary>
         public NotePosition(int LPB, int num, int block)
         {
             this.LPB = LPB;
@@ -26,60 +13,39 @@ namespace NoteMaker.Notes
             this.block = block;
         }
 
-        /// <summary>
-        /// ƒm[ƒgˆÊ’u‚ğƒTƒ“ƒvƒ‹”‚É•ÏŠ·‚·‚éB
-        /// </summary>
-        public int ToSamples(int Freqnency, int BPM)
+        public int ToSamples(int frequency, int BPM)
         {
-            return Mathf.FloorToInt(num * (Freqnency * 60 / BPM / LPB));
+            return Mathf.FloorToInt(num * (frequency * 60f / BPM / LPB));
         }
 
-        /// <summary>
-        /// ƒfƒoƒbƒO—p‚Ì•¶š—ñ‚ğ•Ô‚·B
-        /// </summary>
         public override string ToString()
         {
             return LPB + "-" + num + "-" + block;
         }
 
-        /// <summary>
-        /// ƒm[ƒgˆÊ’u‚ª“¯‚¶‚©‚Ç‚¤‚©‚ğ”»’è‚·‚éB
-        /// </summary>
         public override bool Equals(object obj)
         {
-            // Œ^‚ªˆá‚¤ê‡‚Íˆê’v‚µ‚È‚¢
             if (!(obj is NotePosition))
             {
                 return false;
             }
 
             NotePosition target = (NotePosition)obj;
-
-            // LPB ‚ğl—¶‚µ‚½ num ‚Ì”ä—¦‚Æ block ‚ªˆê’v‚·‚é‚©”»’è
             return (
                 Mathf.Approximately((float)num / LPB, (float)target.num / target.LPB) &&
                 block == target.block);
         }
 
-        /// <summary>
-        /// ƒnƒbƒVƒ…ƒR[ƒh‚ğ•Ô‚·B
-        /// </summary>
         public override int GetHashCode()
         {
             return ToString().GetHashCode();
         }
 
-        /// <summary>
-        /// –³Œø‚ÈˆÊ’u‚ğ•\‚·’è”B
-        /// </summary>
         public static NotePosition None
         {
             get { return new NotePosition(-1, -1, -1); }
         }
 
-        /// <summary>
-        /// Œ»İ‚ÌˆÊ’u‚É’l‚ğ‰ÁZ‚µ‚½V‚µ‚¢ˆÊ’u‚ğ•Ô‚·B
-        /// </summary>
         public NotePosition Add(int LPB, int num, int block)
         {
             return new NotePosition(this.LPB + LPB, this.num + num, this.block + block);

@@ -1,16 +1,4 @@
-// ========================================
-//
-// PlaybackPositionPresenter.cs
-//
-// ========================================
-//
-// Ä¶ˆÊ’uitimeSamplesj‚Ì‘€ì‚Æ UIiƒXƒ‰ƒCƒ_[EŠÔ•\¦j‚Ì“¯Šú‚ğs‚¤ƒNƒ‰ƒXB
-// “ü—ÍƒfƒoƒCƒXi–îˆóƒL[EƒXƒNƒ[ƒ‹Eƒhƒ‰ƒbƒOEƒXƒ‰ƒCƒ_[j‚©‚ç‚Ì‘€ì‚ğ“‡‚µA
-// Audio / Model / UI ‚ğ UniRx ‚Å˜A“®‚³‚¹‚éB
-//
-// ========================================
-
-using NoteMaker.Common;
+ï»¿using NoteMaker.Common;
 using NoteMaker.Model;
 using NoteMaker.Utility;
 using System;
@@ -24,31 +12,28 @@ namespace NoteMaker.Presenter
 {
     public class PlaybackPositionPresenter : MonoBehaviour
     {
-        [SerializeField] CanvasEvents canvasEvents = default;           // ƒLƒƒƒ“ƒoƒX‚Ìƒ}ƒEƒXƒCƒxƒ“ƒg
-        [SerializeField] Slider playbackPositionController = default;   // Ä¶ˆÊ’uƒXƒ‰ƒCƒ_[
-        [SerializeField] Text playbackTimeDisplayText = default;        // Ä¶ŠÔ•\¦
+        [SerializeField]
+        CanvasEvents canvasEvents = default;
+        [SerializeField]
+        Slider playbackPositionController = default;
+        [SerializeField]
+        Text playbackTimeDisplayText = default;
 
         void Awake()
         {
             Audio.OnLoad.First().Subscribe(_ => Init());
         }
 
-        /// <summary>
-        /// Ä¶ˆÊ’u‘€ì‚Æ UI “¯Šú‚Ì‰Šú‰»ˆ—B
-        /// </summary>
         void Init()
         {
-            // ƒNƒŠƒbƒv“Ç‚İ‚İŒã‚ÉƒXƒ‰ƒCƒ_[Å‘å’l‚ğİ’è
             this.UpdateAsObservable()
                 .Where(_ => Audio.Source.clip != null)
                 .Select(_ => Audio.Source.clip.samples)
                 .Subscribe(samples => playbackPositionController.maxValue = samples);
 
-            // ============================================================
-            // Input ¨ Audio.timeSamples
-            // ============================================================
+            // Input -> Audio timesamples -> Model timesamples -> UI
 
-            // --- –îˆóƒL[‘€ì ---
+            // Input (arrow key)
             var operateArrowKeyObservable = Observable.Merge(
                     this.UpdateAsObservable().Where(_ => Input.GetKey(KeyCode.RightArrow)).Select(_ => 7),
                     this.UpdateAsObservable().Where(_ => Input.GetKey(KeyCode.LeftArrow)).Select(_ => -7))
@@ -59,18 +44,16 @@ namespace NoteMaker.Presenter
                     * Audio.Source.clip.samples)
                 .Select(delta => Audio.Source.timeSamples + delta);
 
-            // Ä¶’†‚É–îˆóƒL[‘€ì ¨ ˆê’â~
             operateArrowKeyObservable.Where(_ => Audio.IsPlaying.Value)
                 .Do(_ => Audio.IsPlaying.Value = false)
                 .Subscribe(_ => EditState.IsOperatingPlaybackPositionDuringPlay.Value = true);
 
-            // ‘€ìI—¹Œã‚ÉÄ¶ÄŠJ
             operateArrowKeyObservable.Where(_ => EditState.IsOperatingPlaybackPositionDuringPlay.Value)
                 .Throttle(TimeSpan.FromMilliseconds(50))
                 .Do(_ => Audio.IsPlaying.Value = true)
                 .Subscribe(_ => EditState.IsOperatingPlaybackPositionDuringPlay.Value = false);
 
-            // --- ƒXƒNƒ[ƒ‹ƒpƒbƒhiƒhƒ‰ƒbƒOj ---
+            // Input (scroll pad)
             var operateScrollPadObservable = this.UpdateAsObservable()
                 .SkipUntil(canvasEvents.WaveformRegionOnMouseDownObservable
                     .Where(_ => !Input.GetMouseButtonDown(1)))
@@ -84,42 +67,40 @@ namespace NoteMaker.Presenter
                     * Audio.Source.clip.samples)
                 .Select(delta => Audio.Source.timeSamples + delta);
 
-            // Ä¶’†‚Éƒhƒ‰ƒbƒOŠJn ¨ ˆê’â~
             canvasEvents.WaveformRegionOnMouseDownObservable
                 .Where(_ => Audio.IsPlaying.Value)
                 .Do(_ => Audio.IsPlaying.Value = false)
                 .Subscribe(_ => EditState.IsOperatingPlaybackPositionDuringPlay.Value = true);
 
-            // ƒhƒ‰ƒbƒOI—¹ ¨ Ä¶ÄŠJ
             this.UpdateAsObservable()
                 .Where(_ => EditState.IsOperatingPlaybackPositionDuringPlay.Value)
                 .Where(_ => Input.GetMouseButtonUp(0))
                 .Do(_ => Audio.IsPlaying.Value = true)
                 .Subscribe(_ => EditState.IsOperatingPlaybackPositionDuringPlay.Value = false);
 
-            // --- ƒ}ƒEƒXƒzƒC[ƒ‹ ---
+            // Input (mouse scroll wheel)
             var operateMouseScrollWheelObservable = canvasEvents.MouseScrollWheelObservable
                 .Where(_ => !KeyInput.CtrlKey())
                 .Select(delta => Audio.Source.clip.samples / 100f * -delta)
                 .Select(deltaSamples => Audio.Source.timeSamples + deltaSamples);
 
-            // Ä¶’†‚ÉƒzƒC[ƒ‹‘€ì ¨ ˆê’â~
             operateMouseScrollWheelObservable.Where(_ => Audio.IsPlaying.Value)
                 .Do(_ => EditState.IsOperatingPlaybackPositionDuringPlay.Value = true)
                 .Subscribe(_ => Audio.IsPlaying.Value = false);
 
-            // ƒzƒC[ƒ‹’â~Œã ¨ Ä¶ÄŠJ
             operateMouseScrollWheelObservable.Throttle(TimeSpan.FromMilliseconds(350))
                 .Where(_ => EditState.IsOperatingPlaybackPositionDuringPlay.Value)
                 .Do(_ => EditState.IsOperatingPlaybackPositionDuringPlay.Value = false)
                 .Subscribe(_ => Audio.IsPlaying.Value = true);
 
-            // --- ƒXƒ‰ƒCƒ_[‘€ì ---
-            var operatePlayPositionSliderObservable = playbackPositionController
-                .OnValueChangedAsObservable()
+            var isRedoUndoAction = false;
+
+            // Input (slider)
+            var operatePlayPositionSliderObservable = playbackPositionController.OnValueChangedAsObservable()
                 .DistinctUntilChanged();
 
-            // --- ‚·‚×‚Ä‚Ì“ü—Í‚ğ“‡ ---
+
+            // Input -> Audio timesamples
             var operatePlaybackPositionObservable = Observable.Merge(
                     operateArrowKeyObservable,
                     operateScrollPadObservable,
@@ -128,14 +109,9 @@ namespace NoteMaker.Presenter
                 .Select(timeSamples => Mathf.FloorToInt(timeSamples))
                 .Select(timeSamples => Mathf.Clamp(timeSamples, 0, Audio.Source.clip.samples - 1));
 
-            // Audio.timeSamples ‚É”½‰f
             operatePlaybackPositionObservable.Subscribe(timeSamples => Audio.Source.timeSamples = timeSamples);
 
-            // Undo / Redo —p‚É‘€ì—š—ğ‚ğ‹L˜^
-            var isRedoUndoAction = false;
-
-            operatePlaybackPositionObservable
-                .Buffer(operatePlaybackPositionObservable.ThrottleFrame(10))
+            operatePlaybackPositionObservable.Buffer(operatePlaybackPositionObservable.ThrottleFrame(10))
                 .Where(_ => isRedoUndoAction ? (isRedoUndoAction = false) : true)
                 .Where(b => 2 <= b.Count)
                 .Select(x => new { current = x.Last(), prev = x.First() })
@@ -145,40 +121,30 @@ namespace NoteMaker.Presenter
                         () => { isRedoUndoAction = true; Audio.TimeSamples.Value = x.prev; },
                         () => { isRedoUndoAction = true; Audio.TimeSamples.Value = x.current; })));
 
-            // ============================================================
-            // Audio.timeSamples ¨ Model.timeSamples
-            // ============================================================
+
+            // Audio timesamples -> Model timesamples
             Audio.Source.ObserveEveryValueChanged(audio => audio.timeSamples)
                 .DistinctUntilChanged()
                 .Subscribe(timeSamples => Audio.TimeSamples.Value = timeSamples);
 
-            // Ä¶‚ªI’[‚É’B‚µ‚½‚ç’â~
             this.UpdateAsObservable()
                 .Where(_ => Audio.Source.clip != null)
                 .Where(_ => Audio.Source.timeSamples > Audio.Source.clip.samples - 1)
                 .Subscribe(_ => Audio.IsPlaying.Value = false);
 
-            // ============================================================
-            // Model.timeSamples ¨ UI
-            // ============================================================
 
-            // ƒXƒ‰ƒCƒ_[
+            // Model timesamples -> UI(slider)
             Audio.TimeSamples.Subscribe(timeSamples => playbackPositionController.value = timeSamples);
 
-            // ŠÔ•\¦
-            Audio.TimeSamples
-                .Select(_ => TimeSpan.FromSeconds(Audio.Source.time).ToString().Substring(3, 5))
+            // Model timesamples -> UI(text)
+            Audio.TimeSamples.Select(_ => TimeSpan.FromSeconds(Audio.Source.time).ToString().Substring(3, 5))
                 .DistinctUntilChanged()
                 .Select(elapsedTime =>
                     elapsedTime + " / "
-                    + TimeSpan.FromSeconds(Audio.Source.clip.samples / (float)Audio.Source.clip.frequency)
-                        .ToString().Substring(3, 5))
+                    + TimeSpan.FromSeconds(Audio.Source.clip.samples / (float)Audio.Source.clip.frequency).ToString().Substring(3, 5))
                 .SubscribeToText(playbackTimeDisplayText);
         }
 
-        /// <summary>
-        /// ƒXƒ‰ƒCƒ_[‚ğ‰Ÿ‚µ‚½uŠÔ‚Ìˆ—B
-        /// </summary>
         public void PlaybackPositionControllerOnMouseDown()
         {
             if (Audio.IsPlaying.Value)
@@ -188,9 +154,6 @@ namespace NoteMaker.Presenter
             }
         }
 
-        /// <summary>
-        /// ƒXƒ‰ƒCƒ_[‚ğ—£‚µ‚½uŠÔ‚Ìˆ—B
-        /// </summary>
         public void PlaybackPositionControllerOnMouseUp()
         {
             if (EditState.IsOperatingPlaybackPositionDuringPlay.Value)

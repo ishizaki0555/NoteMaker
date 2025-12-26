@@ -1,14 +1,4 @@
-// ========================================
-//
-// SettingsSerializer.cs
-//
-// ========================================
-//
-// SettingsiƒGƒfƒBƒ^İ’èj‚ğ JSON ‚É•Û‘¶E“Ç‚İ‚İ‚·‚é‚½‚ß‚ÌƒVƒŠƒAƒ‰ƒCƒU
-//
-// ========================================
-
-using NoteMaker.DTO;
+ï»¿using NoteMaker.DTO;
 using System.Linq;
 using UnityEngine;
 
@@ -16,41 +6,26 @@ namespace NoteMaker.Model
 {
     public class SettingsSerializer
     {
-        /// <summary>
-        /// JSON •¶š—ñ‚©‚çİ’è‚ğ•œŒ³‚·‚éB
-        /// </summary>
         public static void Deserialize(string json)
         {
             var dto = JsonUtility.FromJson<SettingsDTO>(json);
-
-            // ƒm[ƒg“ü—ÍƒL[İ’è‚ğ•œŒ³
             Settings.NoteInputKeyCodes.Value = dto.noteInputKeyCodes
                 .Select(keyCodeNum => (KeyCode)keyCodeNum)
                 .ToList();
 
-            // Å‘åƒuƒƒbƒN”‚ğ•œŒ³
             Settings.MaxBlock = dto.maxBlock;
 
-            // ƒ[ƒNƒXƒy[ƒXƒpƒX‚ğ•œŒ³i–¢İ’è‚È‚ç persistentDataPath ‚ğg—pj
             Settings.WorkSpacePath.Value = string.IsNullOrEmpty(dto.workSpacePath)
                 ? Application.persistentDataPath
                 : dto.workSpacePath;
         }
 
-        /// <summary>
-        /// Œ»İ‚Ìİ’è‚ğ JSON •¶š—ñ‚É•ÏŠ·‚·‚éB
-        /// </summary>
         public static string Serialize()
         {
             var data = new SettingsDTO();
 
-            // ƒ[ƒNƒXƒy[ƒXƒpƒX
             data.workSpacePath = Settings.WorkSpacePath.Value;
-
-            // Å‘åƒuƒƒbƒN”
             data.maxBlock = EditData.MaxBlock.Value;
-
-            // ƒm[ƒg“ü—ÍƒL[İ’èiƒuƒƒbƒN”‚É‡‚í‚¹‚ÄØ‚è‹l‚ßj
             data.noteInputKeyCodes = Settings.NoteInputKeyCodes.Value
                 .Take(EditData.MaxBlock.Value)
                 .Select(keyCode => (int)keyCode)

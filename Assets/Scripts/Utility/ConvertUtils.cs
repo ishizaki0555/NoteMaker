@@ -1,15 +1,5 @@
-// ========================================
-//
-// ConvertUtils.cs
-//
-// ========================================
-//
-// ƒm[ƒgˆÊ’uEƒTƒ“ƒvƒ‹ˆÊ’uEƒLƒƒƒ“ƒoƒXÀ•W‚Ì‘ŠŒİ•ÏŠ·‚ğs‚¤ƒ†[ƒeƒBƒŠƒeƒB
-//
-// ========================================
-
+ï»¿using NoteMaker.Model;
 using NoteMaker.DTO;
-using NoteMaker.Model;
 using NoteMaker.Notes;
 using UnityEngine;
 
@@ -17,21 +7,14 @@ namespace NoteMaker.Utility
 {
     public class ConvertUtils : SingletonMonoBehaviour<ConvertUtils>
     {
-        /// <summary>
-        /// ƒLƒƒƒ“ƒoƒXã‚Ì X À•W‚ğƒTƒ“ƒvƒ‹”‚É•ÏŠ·‚·‚éB
-        /// </summary>
         public static int CanvasPositionXToSamples(float x)
         {
             var per = (x - SamplesToCanvasPositionX(0)) / NoteCanvas.Width.Value;
             return Mathf.RoundToInt(Audio.Source.clip.samples * per);
         }
 
-        /// <summary>
-        /// ƒTƒ“ƒvƒ‹”‚ğƒLƒƒƒ“ƒoƒXã‚Ì X À•W‚É•ÏŠ·‚·‚éB
-        /// </summary>
         public static float SamplesToCanvasPositionX(int samples)
         {
-            // AudioClip ‚ª‘¶İ‚µ‚È‚¢ê‡‚Í 0 ‚ğ•Ô‚·
             if (Audio.Source.clip == null)
                 return 0;
 
@@ -40,9 +23,6 @@ namespace NoteMaker.Utility
                 + NoteCanvas.OffsetX.Value;
         }
 
-        /// <summary>
-        /// ƒuƒƒbƒN”Ô†‚ğƒLƒƒƒ“ƒoƒXã‚Ì Y À•W‚É•ÏŠ·‚·‚éB
-        /// </summary>
         public static float BlockNumToCanvasPositionY(int blockNum)
         {
             var height = 240f;
@@ -50,9 +30,6 @@ namespace NoteMaker.Utility
             return ((maxIndex - blockNum) * height / maxIndex - height / 2) / NoteCanvas.ScaleFactor.Value;
         }
 
-        /// <summary>
-        /// ƒm[ƒgˆÊ’u‚ğƒLƒƒƒ“ƒoƒXÀ•W‚É•ÏŠ·‚·‚éB
-        /// </summary>
         public static Vector3 NoteToCanvasPosition(NotePosition notePosition)
         {
             return new Vector3(
@@ -61,22 +38,14 @@ namespace NoteMaker.Utility
                 0);
         }
 
-        /// <summary>
-        /// ‰æ–ÊÀ•W‚ğƒLƒƒƒ“ƒoƒXÀ•W‚É•ÏŠ·‚·‚éB
-        /// </summary>
         public static Vector3 ScreenToCanvasPosition(Vector3 screenPosition)
         {
-            return (screenPosition - new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0))
-                * NoteCanvas.ScaleFactor.Value;
+            return (screenPosition - new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0)) * NoteCanvas.ScaleFactor.Value;
         }
 
-        /// <summary>
-        /// ƒLƒƒƒ“ƒoƒXÀ•W‚ğ‰æ–ÊÀ•W‚É•ÏŠ·‚·‚éB
-        /// </summary>
         public static Vector3 CanvasToScreenPosition(Vector3 canvasPosition)
         {
-            return (canvasPosition / NoteCanvas.ScaleFactor.Value
-                + new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0));
+            return (canvasPosition / NoteCanvas.ScaleFactor.Value + new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0));
         }
     }
 }

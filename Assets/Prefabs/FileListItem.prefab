@@ -183,13 +183,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 132690}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e9a4c66a77434c2469dbbaac322dd436, type: 3}
+  m_Script: {fileID: 11500000, guid: 1d933f2a3b6b3b649a1a5c408e9572f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectedStateBackgroundColor: {r: 0, g: 0, b: 0, a: 1}
-  defaultBackgroundColor: {r: 0.3207547, g: 0.31318974, b: 0.31318974, a: 1}
+  selectedStateBackgroundColor: {r: 0.06666667, g: 0.07450981, b: 0.0627451, a: 1}
+  defaultBackgroundColor: {r: 0.1882353, g: 0.19215687, b: 0.18431373, a: 1}
   selectedTextColor: {r: 1, g: 1, b: 1, a: 1}
-  defaultTextColor: {r: 0.6603774, g: 0.6603774, b: 0.6603774, a: 1}
+  defaultTextColor: {r: 0.57254905, g: 0.5803922, b: 0.56078434, a: 1}
   itemTypeIcon: {fileID: 11442474}
   directoryIcon: {fileID: 21300000, guid: 5dbeaa4ac214030409be8295d6668389, type: 3}
   musicFileIcon: {fileID: 21300000, guid: 11ed46bc0cde2b741a99693dc4f04344, type: 3}

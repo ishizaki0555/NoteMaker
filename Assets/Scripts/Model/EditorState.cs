@@ -1,37 +1,14 @@
-// ========================================
-//
-// EditorState.cs
-//
-// ========================================
-//
-// ƒGƒfƒBƒ^[‘S‘Ì‚Ìó‘Ôi”gŒ`•\¦EŒø‰Ê‰¹‚È‚Çj‚ğ•Û‚·‚éƒVƒ“ƒOƒ‹ƒgƒ“
-//
-// ========================================
-
-using NoteMaker.Utility;
+ï»¿using NoteMaker.Utility;
 using UniRx;
 
 namespace NoteMaker.Model
 {
     public class EditorState : SingletonMonoBehaviour<EditorState>
     {
-        ReactiveProperty<bool> waveformDisplayEnabled_ = new ReactiveProperty<bool>(true);  // ”gŒ`•\¦‚Ì ON/OFF
-        ReactiveProperty<bool> clapSoundEffectEnabled_ = new ReactiveProperty<bool>(true);  // ƒm[ƒg”z’u‚ÌŒø‰Ê‰¹ ON/OFF
+        ReactiveProperty<bool> waveformDisplayEnabled_ = new ReactiveProperty<bool>(true);
+        ReactiveProperty<bool> clapSoundEffectEnabled_ = new ReactiveProperty<bool>(true);
 
-        /// <summary>
-        /// ”gŒ`•\¦‚Ì ON/OFF ó‘Ô
-        /// </summary>
-        public static ReactiveProperty<bool> WaveformDisplayEnabled
-        {
-            get { return Instance.waveformDisplayEnabled_; }
-        }
-
-        /// <summary>
-        /// ƒm[ƒg”z’u‚ÌŒø‰Ê‰¹ ON/OFF ó‘Ô
-        /// </summary>
-        public static ReactiveProperty<bool> ClapSoundEffectEnabled
-        {
-            get { return Instance.clapSoundEffectEnabled_; }
-        }
+        public static ReactiveProperty<bool> WaveformDisplayEnabled { get { return Instance.waveformDisplayEnabled_; } }
+        public static ReactiveProperty<bool> ClapSoundEffectEnabled { get { return Instance.clapSoundEffectEnabled_; } }
     }
 }

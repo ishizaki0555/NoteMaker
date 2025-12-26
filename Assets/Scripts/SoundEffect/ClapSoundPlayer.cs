@@ -1,16 +1,4 @@
-// ========================================
-//
-// ClapSoundPlayer.cs
-//
-// ========================================
-//
-// ƒm[ƒgÄ¶‚ÉuƒNƒ‰ƒbƒv‰¹v‚ğ–Â‚ç‚·ƒNƒ‰ƒXB
-// Ä¶’†‚Ìƒm[ƒgˆÊ’u‚ğŠÄ‹‚µAw’èƒTƒ“ƒvƒ‹ˆÊ’u‚É“’B‚µ‚½‚çŒø‰Ê‰¹‚ğÄ¶‚·‚éB
-// UniRx ‚ğ—p‚¢‚ÄAÄ¶ó‘ÔE•ÒW‘€ìELateUpdate ‚ğ‘g‚İ‡‚í‚¹‚Ä§Œä‚·‚éB
-//
-// ========================================
-
-using NoteMaker.Model;
+ï»¿using NoteMaker.Model;
 using NoteMaker.Presenter;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,17 +11,13 @@ namespace NoteMaker.SoundEffect
     public class ClapSoundPlayer : MonoBehaviour
     {
         [SerializeField]
-        AudioSource clapAudioSource = default; // Ä¶‚·‚éƒNƒ‰ƒbƒv‰¹
+        AudioSource clapAudioSource = default;
 
-        /// <summary>
-        /// Ä¶’†‚Ìƒm[ƒgˆÊ’u‚É‰‚¶‚ÄƒNƒ‰ƒbƒv‰¹‚ğ–Â‚ç‚·ˆ—‚ğƒZƒbƒgƒAƒbƒv‚·‚éB
-        /// </summary>
         void Awake()
         {
             var editPresenter = EditNotesPresenter.Instance;
-            var clapOffsetSamples = 1800; // ‰¹‚ğ–Â‚ç‚·ƒ^ƒCƒ~ƒ“ƒO‚Ì•â³’l
+            var clapOffsetSamples = 1800;
 
-            // Ä¶’†‚É•ÒW‘€ì‚ªs‚í‚ê‚½‚çƒNƒ‰ƒbƒvˆ—‚ğƒŠƒZƒbƒg‚·‚é
             var editedDuringPlaybackObservable = Observable.Merge(
                     EditData.OffsetSamples.Select(_ => false),
                     editPresenter.RequestForEditNote.Select(_ => false),
@@ -41,33 +25,25 @@ namespace NoteMaker.SoundEffect
                     editPresenter.RequestForAddNote.Select(_ => false))
                 .Where(_ => Audio.IsPlaying.Value);
 
-            // Ä¶ŠJn or Ä¶’†‚Ì•ÒW‘€ì‚ğƒgƒŠƒK[‚ÉƒNƒ‰ƒbƒvƒLƒ…[‚ğ¶¬
             Audio.IsPlaying.Where(isPlaying => isPlaying)
                 .Merge(editedDuringPlaybackObservable)
                 .Select(_ =>
                     new Queue<int>(
                         EditData.Notes.Values
-                            .Select(noteObject =>
-                                noteObject.note.position.ToSamples(
-                                    Audio.Source.clip.frequency,
-                                    EditData.BPM.Value))
+                            .Select(noteObject => noteObject.note.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value))
                             .Distinct()
                             .Select(samples => samples + EditData.OffsetSamples.Value)
                             .Where(samples => Audio.Source.timeSamples <= samples)
                             .OrderBy(samples => samples)
                             .Select(samples => samples - clapOffsetSamples)))
-                // LateUpdate ‚Ì‚½‚Ñ‚ÉƒLƒ…[‚ğŠÄ‹
                 .SelectMany(samplesQueue =>
                     this.LateUpdateAsObservable()
                         .TakeWhile(_ => Audio.IsPlaying.Value)
                         .TakeUntil(editedDuringPlaybackObservable.Skip(1))
                         .Select(_ => samplesQueue))
-                // ƒLƒ…[‚ª‹ó‚Å‚È‚¢
                 .Where(samplesQueue => samplesQueue.Count > 0)
-                // Ÿ‚ÌƒNƒ‰ƒbƒvƒ^ƒCƒ~ƒ“ƒO‚É“’B‚µ‚½
                 .Where(samplesQueue => samplesQueue.Peek() <= Audio.Source.timeSamples)
                 .Do(samplesQueue => samplesQueue.Dequeue())
-                // Œø‰Ê‰¹‚ª—LŒø‚Èê‡‚Ì‚İÄ¶
                 .Where(_ => EditorState.ClapSoundEffectEnabled.Value)
                 .Subscribe(_ => clapAudioSource.PlayOneShot(clapAudioSource.clip, 1));
         }
