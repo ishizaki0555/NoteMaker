@@ -16,7 +16,7 @@ namespace NoteMaker.GLDrawing
         int imageHeight = 1080;
         float[] samples = new float[500000];
 
-        float cachedCanvasWidth = 0;
+        float cachedCanvasHeight = 0;
         float cachedTimeSamples = 0;
 
         void Start()
@@ -46,7 +46,10 @@ namespace NoteMaker.GLDrawing
 
             int textureY = 0;
             float maxSample = 0;
-            int skipSamples = Mathf.RoundToInt(1 / (NoteCanvas.Width.Value * 0.5f / Audio.Source.clip.samples));
+
+            int skipSamples = Mathf.RoundToInt(
+                1 / (NoteCanvas.Height.Value * 0.5f / Audio.Source.clip.samples)
+            );
 
             for (int i = 0, l = samples.Length; textureY < imageHeight && i < l; i++)
             {
@@ -65,18 +68,23 @@ namespace NoteMaker.GLDrawing
 
         void ResetTexture()
         {
-            texture.SetPixels(Enumerable.Range(0, imageHeight).Select(_ => Color.clear).ToArray());
+            texture.SetPixels(
+                Enumerable.Range(0, imageHeight)
+                .Select(_ => Color.clear)
+                .ToArray()
+            );
             texture.Apply();
         }
 
         bool HasUpdate(float timeSamples)
         {
-            return cachedCanvasWidth != NoteCanvas.Width.Value || cachedTimeSamples != timeSamples;
+            return cachedCanvasHeight != NoteCanvas.Height.Value
+                || cachedTimeSamples != timeSamples;
         }
 
         void UpdateCache(float timeSamples)
         {
-            cachedCanvasWidth = NoteCanvas.Width.Value;
+            cachedCanvasHeight = NoteCanvas.Height.Value;
             cachedTimeSamples = timeSamples;
         }
     }

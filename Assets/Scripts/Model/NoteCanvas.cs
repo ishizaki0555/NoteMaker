@@ -7,6 +7,7 @@ namespace NoteMaker.Model
 {
     public class NoteCanvas : SingletonMonoBehaviour<NoteCanvas>
     {
+        ReactiveProperty<float> height_ = new ReactiveProperty<float>();
         ReactiveProperty<float> width_ = new ReactiveProperty<float>();
         ReactiveProperty<float> offsetY_ = new ReactiveProperty<float>();
         ReactiveProperty<float> scaleFactor_ = new ReactiveProperty<float>();
@@ -14,19 +15,23 @@ namespace NoteMaker.Model
         ReactiveProperty<bool> isMouseOverWaveformRegion_ = new ReactiveProperty<bool>();
         ReactiveProperty<NotePosition> closestNotePosition_ = new ReactiveProperty<NotePosition>();
 
-        public static ReactiveProperty<float> Width { get { return Instance.width_; } }
-        public static ReactiveProperty<float> OffsetY { get { return Instance.offsetY_; } }
-        public static ReactiveProperty<float> ScaleFactor { get { return Instance.scaleFactor_; } }
-        public static ReactiveProperty<bool> IsMouseOverNotesRegion { get { return Instance.isMouseOverNotesRegion_; } }
-        public static ReactiveProperty<bool> IsMouseOverWaveformRegion { get { return Instance.isMouseOverWaveformRegion_; } }
-        public static ReactiveProperty<NotePosition> ClosestNotePosition { get { return Instance.closestNotePosition_; } }
+        public static ReactiveProperty<float> Height => Instance.height_;
+        public static ReactiveProperty<float> Width => Instance.width_;
+        public static ReactiveProperty<float> OffsetY => Instance.offsetY_;
+        public static ReactiveProperty<float> ScaleFactor => Instance.scaleFactor_;
+        public static ReactiveProperty<bool> IsMouseOverNotesRegion => Instance.isMouseOverNotesRegion_;
+        public static ReactiveProperty<bool> IsMouseOverWaveformRegion => Instance.isMouseOverWaveformRegion_;
+        public static ReactiveProperty<NotePosition> ClosestNotePosition => Instance.closestNotePosition_;
 
         void Awake()
         {
+            // ★ 画面幅に応じてスケールを決定（縦向きでもこのままでOK）
             this.ObserveEveryValueChanged(_ => Screen.width)
                 .DistinctUntilChanged()
                 .Subscribe(w => ScaleFactor.Value = 1280f / w);
-            // .Subscribe(w => NoteCanvas.ScaleFactor.Value = canvasScaler.referenceResolution.x / w);
+
+            // ★ Width の初期値を設定（レーン数に応じて変えるならここ）
+            Width.Value = 240f; // 必要に応じて変更
         }
     }
 }

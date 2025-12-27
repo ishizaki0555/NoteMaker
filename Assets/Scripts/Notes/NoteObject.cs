@@ -38,6 +38,7 @@ namespace NoteMaker.Notes
             var editPresenter = EditNotesPresenter.Instance;
             noteType = this.ObserveEveryValueChanged(_ => note.type).ToReactiveProperty();
 
+            // 色の更新
             disposable.Add(noteType.Where(_ => !isSelected.Value)
                 .Merge(isSelected.Select(_ => noteType.Value))
                 .Select(type => type == NoteTypes.Long)
@@ -46,14 +47,17 @@ namespace NoteMaker.Notes
             disposable.Add(isSelected.Where(selected => selected)
                 .Subscribe(_ => noteColor_.Value = selectedStateColor));
 
+            // クリック処理
             var mouseDownObservable = OnClickObservable
                 .Select(_ => EditState.NoteType.Value)
                 .Where(_ => NoteCanvas.ClosestNotePosition.Value.Equals(note.position));
 
+            // 単ノーツ削除
             disposable.Add(mouseDownObservable.Where(editType => editType == NoteTypes.Single)
                 .Where(editType => editType == noteType.Value)
                 .Subscribe(_ => editPresenter.RequestForRemoveNote.OnNext(note)));
 
+            // ロングノーツ編集
             disposable.Add(mouseDownObservable.Where(editType => editType == NoteTypes.Long)
                 .Where(editType => editType == noteType.Value)
                 .Subscribe(_ =>
@@ -78,6 +82,7 @@ namespace NoteMaker.Notes
                     }
                 }));
 
+            // ロングノーツの線描画（縦向き対応）
             var longNoteUpdateObservable = LateUpdateObservable
                 .Where(_ => noteType.Value == NoteTypes.Long);
 
@@ -91,8 +96,14 @@ namespace NoteMaker.Notes
                 .Select(nextPosition => new Line(
                     ConvertUtils.CanvasToScreenPosition(ConvertUtils.NoteToCanvasPosition(note.position)),
                     ConvertUtils.CanvasToScreenPosition(nextPosition),
-                    isSelected.Value || EditData.Notes.ContainsKey(note.next) && EditData.Notes[note.next].isSelected.Value ? selectedStateColor
-                        : 0 < nextPosition.x - ConvertUtils.NoteToCanvasPosition(note.position).x ? longNoteColor : invalidStateColor))
+
+                    // ★ 縦向き：Y 方向でロングノーツの正しい向きを判定
+                    isSelected.Value ||
+                    (EditData.Notes.ContainsKey(note.next) && EditData.Notes[note.next].isSelected.Value)
+                        ? selectedStateColor
+                        : 0 < nextPosition.y - ConvertUtils.NoteToCanvasPosition(note.position).y
+                            ? longNoteColor
+                            : invalidStateColor))
                 .Subscribe(line => GLLineDrawer.Draw(line)));
         }
 

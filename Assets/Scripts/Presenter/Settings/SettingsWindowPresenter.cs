@@ -18,7 +18,7 @@ namespace NoteMaker.Presenter
         static string fileName = "settings.json";
         static string filePath = Path.Combine(directoryPath, fileName);
 
-        string LoadSettingsJson()
+        public string LoadSettingsJson()
         {
             if (!Directory.Exists(directoryPath))
             {

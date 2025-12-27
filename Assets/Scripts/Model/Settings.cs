@@ -1,4 +1,5 @@
 ﻿using NoteMaker.Utility;
+using NoteMaker.Presenter;
 using System.Collections.Generic;
 using System.IO;
 using UniRx;
@@ -8,7 +9,7 @@ namespace NoteMaker.Model
 {
     public class Settings : SingletonMonoBehaviour<Settings>
     {
-        ReactiveProperty<string> workSpacePath_ = new ReactiveProperty<string>(GetDefaultWorkspacePath());
+        ReactiveProperty<string> workSpacePath_ = new ReactiveProperty<string>();
         ReactiveProperty<List<KeyCode>> noteInputKeyCodes_ = new ReactiveProperty<List<KeyCode>>();
         ReactiveProperty<int> selectedBlock_ = new ReactiveProperty<int>();
         ReactiveProperty<bool> isOpen_ = new ReactiveProperty<bool>(false);
@@ -20,15 +21,5 @@ namespace NoteMaker.Model
         public static ReactiveProperty<bool> IsOpen { get { return Instance.isOpen_; } }
         public static Subject<Unit> RequestForChangeInputNoteKeyCode { get { return Instance.requestForChangeInputNoteKeyCode_; } }
         public static int MaxBlock = 0;
-
-        static string GetDefaultWorkspacePath()
-        {
-            var path = Path.Combine("C:/Users/ishiz/AppData/LocalLow/DefaultCompany/NoteMaker");
-
-            if(!Directory.Exists(path))
-                Directory.CreateDirectory(path);
-
-            return Path.GetFullPath(path);
-        }
     }
 }

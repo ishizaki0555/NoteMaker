@@ -35,14 +35,15 @@ namespace NoteMaker.Presenter
 
             // Input (arrow key)
             var operateArrowKeyObservable = Observable.Merge(
-                    this.UpdateAsObservable().Where(_ => Input.GetKey(KeyCode.RightArrow)).Select(_ => 7),
-                    this.UpdateAsObservable().Where(_ => Input.GetKey(KeyCode.LeftArrow)).Select(_ => -7))
+                    this.UpdateAsObservable().Where(_ => Input.GetKey(KeyCode.UpArrow)).Select(_ => 7),
+                    this.UpdateAsObservable().Where(_ => Input.GetKey(KeyCode.DownArrow)).Select(_ => -7))
                 .Select(delta => delta * (KeyInput.CtrlKey() ? 5 : 1))
                 .Select(delta => delta
-                    / NoteCanvas.Width.Value
+                    / NoteCanvas.Height.Value
                     * NoteCanvas.ScaleFactor.Value
                     * Audio.Source.clip.samples)
                 .Select(delta => Audio.Source.timeSamples + delta);
+
 
             operateArrowKeyObservable.Where(_ => Audio.IsPlaying.Value)
                 .Do(_ => Audio.IsPlaying.Value = false)
@@ -58,14 +59,15 @@ namespace NoteMaker.Presenter
                 .SkipUntil(canvasEvents.WaveformRegionOnMouseDownObservable
                     .Where(_ => !Input.GetMouseButtonDown(1)))
                 .TakeWhile(_ => !Input.GetMouseButtonUp(0))
-                .Select(_ => Input.mousePosition.x)
+                .Select(_ => Input.mousePosition.y)
                 .Buffer(2, 1).Where(b => 2 <= b.Count)
                 .RepeatSafe()
                 .Select(b => (b[0] - b[1])
-                    / NoteCanvas.Width.Value
+                    / NoteCanvas.Height.Value
                     * NoteCanvas.ScaleFactor.Value
                     * Audio.Source.clip.samples)
                 .Select(delta => Audio.Source.timeSamples + delta);
+
 
             canvasEvents.WaveformRegionOnMouseDownObservable
                 .Where(_ => Audio.IsPlaying.Value)
