@@ -50,7 +50,7 @@ namespace NoteMaker.Presenter
                 var pos = horizontalLineRect.localPosition;
                 var pos2 = waveformRenderImage.localPosition;
 
-                pos.y = pos2.y = y; // ← X → Y に変更
+                pos.y = pos2.y = y;
 
                 horizontalLineRect.localPosition = pos;
                 waveformRenderImage.localPosition = pos2;

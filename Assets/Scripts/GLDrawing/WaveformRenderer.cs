@@ -53,7 +53,8 @@ namespace NoteMaker.GLDrawing
 
             for (int i = 0, l = samples.Length; textureY < imageHeight && i < l; i++)
             {
-                maxSample = Mathf.Max(maxSample, samples[i]);
+                float amplitudeScale = 1.5f;
+                maxSample = Mathf.Max(maxSample, Mathf.Abs(samples[i]) * amplitudeScale);
 
                 if (i % skipSamples == 0)
                 {
