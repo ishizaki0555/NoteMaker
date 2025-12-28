@@ -133,7 +133,7 @@ namespace NoteMaker.GLDrawing
                             if (i % (EditData.LPB.Value * 4) == 0)
                             {
                                 BeatNumberRenderer.Render(
-                                    new Vector3(Screen.width / 2f + 154 / NoteCanvas.ScaleFactor.Value, beatLines[i].start.y, 0),
+                                    new Vector3(Screen.width / 2f + 100 / NoteCanvas.ScaleFactor.Value, beatLines[i].start.y, 0),
                                     i / (EditData.LPB.Value * 4));
                             }
                         }
