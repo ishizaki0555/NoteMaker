@@ -2582,7 +2582,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.25792095, g: 0.26415092, b: 0.26325175, a: 1}
+  m_BackGroundColor: {r: 0, g: 0.5849056, b: 0.5849056, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -2660,14 +2660,14 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   m_VolumeTrigger: {fileID: 0}
-  m_VolumeFrameworkUpdateModeOption: 0
+  m_VolumeFrameworkUpdateModeOption: 1
   m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
   m_Dithering: 0
   m_ClearDepth: 1
-  m_AllowXRRendering: 1
+  m_AllowXRRendering: 0
   m_AllowHDROutput: 1
   m_UseScreenCoordOverride: 0
   m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
@@ -2987,7 +2987,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 700509c799156c6438a41f0b72436811, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mat: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  mat: {fileID: 2100000, guid: 9f6503002a3c63b4fbdf505dde278ca1, type: 2}
 --- !u!114 &392085486
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3000,7 +3000,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 178ed649ba93676489e7f436a50a6ade, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mat: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  mat: {fileID: 2100000, guid: 9f6503002a3c63b4fbdf505dde278ca1, type: 2}
 --- !u!4 &392085487
 Transform:
   m_ObjectHideFlags: 0
@@ -13891,9 +13891,9 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 330585546}
-  - {fileID: 392085487}
   - {fileID: 410087041}
   - {fileID: 217719360}
+  - {fileID: 392085487}
   - {fileID: 174093837}
   - {fileID: 1018058443}
   - {fileID: 1323451781}

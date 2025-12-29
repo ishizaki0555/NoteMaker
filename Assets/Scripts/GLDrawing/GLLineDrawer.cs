@@ -14,6 +14,8 @@ namespace NoteMaker.GLDrawing
 
         void OnRenderObject()
         {
+            Debug.Log("GLLineDrawer OnRenderObject");
+
             GL.PushMatrix();
             mat.SetPass(0);
             GL.LoadPixelMatrix();

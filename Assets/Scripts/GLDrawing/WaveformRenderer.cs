@@ -13,7 +13,7 @@ namespace NoteMaker.GLDrawing
 
         Texture2D texture;
 
-        int imageHeight = 1080;
+        int imageHeight = 1280;
         float[] samples = new float[500000];
 
         float cachedCanvasHeight = 0;

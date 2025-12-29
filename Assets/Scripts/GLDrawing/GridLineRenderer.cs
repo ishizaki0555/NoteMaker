@@ -62,7 +62,7 @@ namespace NoteMaker.GLDrawing
                     else
                     {
                         float currentY = ConvertUtils.CanvasToScreenPosition(Vector3.up * ConvertUtils.SamplesToCanvasPositionY(0)).y;
-                        float diffY = currentY - cachedZeroSamplePosY;
+                        float diffY = (currentY - cachedZeroSamplePosY);
 
                         for (int i = 0; i < beatNum; i++)
                         {
@@ -126,6 +126,8 @@ namespace NoteMaker.GLDrawing
 
                     for (int i = 0, l = beatLines.Length; i < l && beatLines[i].start.y < screenHeight; i++)
                     {
+                        Debug.Log($"BeatLine Y = {beatLines[i].start.x}, {beatLines[i].start.y}");
+
                         if (beatLines[i].start.y > 0)
                         {
                             GLLineDrawer.Draw(beatLines[i]);
