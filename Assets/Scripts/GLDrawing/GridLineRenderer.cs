@@ -49,11 +49,14 @@ namespace NoteMaker.GLDrawing
                             .Select(i => i * unitBeatSamples / EditData.LPB.Value)
                             .ToArray();
 
+                        var offsetY = -1200;
+                        var offsetX = -600;
+
                         beatLines = beatSamples
-                            .Select(s => ConvertUtils.SamplesToCanvasPositionY(s))
+                            .Select(s => ConvertUtils.SamplesToCanvasPositionY(s) + offsetY)
                             .Select((y, i) => new Line(
-                                ConvertUtils.CanvasToScreenPosition(new Vector3(-140 * BeatLineLengthFactor(i), y, 0)),
-                                ConvertUtils.CanvasToScreenPosition(new Vector3(140 * BeatLineLengthFactor(i), y, 0)),
+                                ConvertUtils.CanvasToScreenPosition(new Vector3(-140 * BeatLineLengthFactor(i) + offsetX, y, 0)),
+                                ConvertUtils.CanvasToScreenPosition(new Vector3(140 * BeatLineLengthFactor(i) + offsetX, y, 0)),
                                 BeatLineColor(i)))
                             .ToArray();
                         cachedZeroSamplePosY = beatLines[0].start.y;
@@ -126,8 +129,6 @@ namespace NoteMaker.GLDrawing
 
                     for (int i = 0, l = beatLines.Length; i < l && beatLines[i].start.y < screenHeight; i++)
                     {
-                        Debug.Log($"BeatLine Y = {beatLines[i].start.x}, {beatLines[i].start.y}");
-
                         if (beatLines[i].start.y > 0)
                         {
                             GLLineDrawer.Draw(beatLines[i]);

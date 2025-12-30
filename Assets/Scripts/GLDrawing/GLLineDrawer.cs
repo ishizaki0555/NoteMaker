@@ -14,11 +14,14 @@ namespace NoteMaker.GLDrawing
 
         void OnRenderObject()
         {
-            Debug.Log("GLLineDrawer OnRenderObject");
-
             GL.PushMatrix();
             mat.SetPass(0);
-            GL.LoadPixelMatrix();
+            GL.LoadPixelMatrix(
+                -Screen.width * 0.5f,
+                Screen.width * 0.5f,
+                -Screen.height * 0.5f,
+                Screen.height * 0.5f
+                );
             GL.Begin(GL.LINES);
 
             if (size * 2 < maxSize)

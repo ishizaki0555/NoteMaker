@@ -24,7 +24,6 @@ namespace NoteMaker.GLDrawing
                     noteObj.LateUpdateObservable.OnNext(Unit.Default);
 
                     var screenPos = ConvertUtils.CanvasToScreenPosition(canvasPosOfNote);
-                    Debug.Log($"Note screenPos = {screenPos}");
                     var drawSize = 9 / NoteCanvas.ScaleFactor.Value;
 
                     GLQuadDrawer.Draw(new Geometry(
