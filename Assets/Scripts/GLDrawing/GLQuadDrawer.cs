@@ -8,6 +8,7 @@ namespace NoteMaker.GLDrawing
     {
         [SerializeField]
         Material mat = default;
+
         List<Geometry> drawData = new List<Geometry>();
 
         static int size = 0;
@@ -25,28 +26,25 @@ namespace NoteMaker.GLDrawing
                 drawData.RemoveRange(size, maxSize - size);
                 maxSize = size;
             }
-
+            
             for (int i = 0; i < size; i++)
             {
                 GL.Color(drawData[i].color);
 
-                foreach (var vertex in drawData[i].vertices)
-                {
-                    GL.Vertex(vertex);
-                }
+                foreach (var v in drawData[i].vertices)
+                    GL.Vertex(v);
             }
 
             GL.End();
             GL.PopMatrix();
+
             size = 0;
         }
 
         public static void Draw(Geometry[] quads)
         {
-            foreach (var quad in quads)
-            {
-                Draw(quad);
-            }
+            foreach (var q in quads)
+                Draw(q);
         }
 
         public static void Draw(Geometry quad)

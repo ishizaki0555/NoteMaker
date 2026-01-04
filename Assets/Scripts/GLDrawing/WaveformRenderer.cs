@@ -13,7 +13,7 @@ namespace NoteMaker.GLDrawing
 
         Texture2D texture;
 
-        int imageHeight = 1280;
+        int imageHeight = 720;
         float[] samples = new float[500000];
 
         float cachedCanvasHeight = 0;
@@ -21,10 +21,17 @@ namespace NoteMaker.GLDrawing
 
         void Start()
         {
+            // ============================
+            // ★ Texture を縦長で初期化（縦スクロール版）
+            // ============================
             texture = new Texture2D(1, imageHeight);
             image.texture = texture;
+
             ResetTexture();
 
+            // ============================
+            // ★ 横版と同じ構造のイベント
+            // ============================
             EditorState.WaveformDisplayEnabled
                 .Where(enabled => !enabled)
                 .Subscribe(_ => ResetTexture());
@@ -35,26 +42,40 @@ namespace NoteMaker.GLDrawing
             if (Audio.Source.clip == null || !EditorState.WaveformDisplayEnabled.Value)
                 return;
 
-            var timeSamples = Mathf.Min(Audio.SmoothedTimeSamples.Value, Audio.Source.clip.samples - 1);
+            // ============================
+            // ★ 現在のサンプル位置（横版と同じ構造）
+            // ============================
+            var timeSamples = Mathf.Min(
+                Audio.SmoothedTimeSamples.Value,
+                Audio.Source.clip.samples - 1
+            );
 
             if (!HasUpdate(timeSamples))
                 return;
 
             UpdateCache(timeSamples);
 
+            // ============================
+            // ★ 波形データ取得（横版と同じ構造）
+            // ============================
             Audio.Source.clip.GetData(samples, Mathf.RoundToInt(timeSamples));
 
             int textureY = 0;
             float maxSample = 0;
 
+            // ============================
+            // ★ skipSamples（横版構造 × 縦方向）
+            // ============================
             int skipSamples = Mathf.RoundToInt(
                 1 / (NoteCanvas.Height.Value * 0.5f / Audio.Source.clip.samples)
             );
 
+            // ============================
+            // ★ 波形描画（縦方向）
+            // ============================
             for (int i = 0, l = samples.Length; textureY < imageHeight && i < l; i++)
             {
-                float amplitudeScale = 1.5f;
-                maxSample = Mathf.Max(maxSample, Mathf.Abs(samples[i]) * amplitudeScale);
+                maxSample = Mathf.Max(maxSample, Mathf.Abs(samples[i]));
 
                 if (i % skipSamples == 0)
                 {
@@ -67,6 +88,9 @@ namespace NoteMaker.GLDrawing
             texture.Apply();
         }
 
+        // ============================
+        // ★ Texture 初期化（横版構造）
+        // ============================
         void ResetTexture()
         {
             texture.SetPixels(
@@ -77,12 +101,18 @@ namespace NoteMaker.GLDrawing
             texture.Apply();
         }
 
+        // ============================
+        // ★ 更新判定（横版構造）
+        // ============================
         bool HasUpdate(float timeSamples)
         {
             return cachedCanvasHeight != NoteCanvas.Height.Value
                 || cachedTimeSamples != timeSamples;
         }
 
+        // ============================
+        // ★ キャッシュ更新（横版構造）
+        // ============================
         void UpdateCache(float timeSamples)
         {
             cachedCanvasHeight = NoteCanvas.Height.Value;

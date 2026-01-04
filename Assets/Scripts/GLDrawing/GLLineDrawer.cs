@@ -6,7 +6,9 @@ namespace NoteMaker.GLDrawing
 {
     public class GLLineDrawer : SingletonMonoBehaviour<GLLineDrawer>
     {
-        [SerializeField] Material mat = default;
+        [SerializeField]
+        Material mat = default;
+
         List<Line> drawData = new List<Line>();
 
         static int size = 0;
@@ -16,12 +18,7 @@ namespace NoteMaker.GLDrawing
         {
             GL.PushMatrix();
             mat.SetPass(0);
-            GL.LoadPixelMatrix(
-                -Screen.width * 0.5f,
-                Screen.width * 0.5f,
-                -Screen.height * 0.5f,
-                Screen.height * 0.5f
-                );
+            GL.LoadPixelMatrix();
             GL.Begin(GL.LINES);
 
             if (size * 2 < maxSize)
@@ -40,15 +37,14 @@ namespace NoteMaker.GLDrawing
 
             GL.End();
             GL.PopMatrix();
+
             size = 0;
         }
 
         public static void Draw(Line[] lines)
         {
             foreach (var line in lines)
-            {
                 Draw(line);
-            }
         }
 
         public static void Draw(Line line)

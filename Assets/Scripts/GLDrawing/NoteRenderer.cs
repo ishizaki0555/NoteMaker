@@ -14,28 +14,51 @@ namespace NoteMaker.GLDrawing
 
             foreach (var noteObj in EditData.Notes.Values)
             {
-                var canvasPosOfNote = ConvertUtils.NoteToCanvasPosition(noteObj.note.position);
+                // ============================
+                // ★ Canvas座標を取得
+                // ============================
+                var canvasPos = ConvertUtils.NoteToCanvasPosition(noteObj.note.position);
 
-                var min = ConvertUtils.ScreenToCanvasPosition(Vector3.zero).y;
-                var max = ConvertUtils.ScreenToCanvasPosition(Vector3.up * Screen.height).y * 1.1f;
+                // ============================
+                // ★ 画面内判定（縦スクロール版）
+                // ============================
+                float minY = ConvertUtils.ScreenToCanvasPosition(Vector3.zero).y;
+                float maxY = ConvertUtils.ScreenToCanvasPosition(Vector3.up * Screen.height).y * 1.1f;
 
-                if (min <= canvasPosOfNote.y && canvasPosOfNote.y <= max)
+                if (minY <= canvasPos.y && canvasPos.y <= maxY)
                 {
+                    // ノーツ固有の LateUpdate を呼ぶ（横版と同じ構造）
                     noteObj.LateUpdateObservable.OnNext(Unit.Default);
 
-                    var screenPos = ConvertUtils.CanvasToScreenPosition(canvasPosOfNote);
-                    var drawSize = 9 / NoteCanvas.ScaleFactor.Value;
+                    // ============================
+                    // ★ 画面座標へ変換
+                    // ============================
+                    var screenPos = ConvertUtils.CanvasToScreenPosition(canvasPos);
 
+                    // ============================
+                    // ★ 描画サイズ（横版と同じ構造）
+                    // ============================
+                    float drawSize = 9f / NoteCanvas.ScaleFactor.Value;
+
+                    // ============================
+                    // ★ 菱形ノーツを描画（縦方向）
+                    // ============================
                     GLQuadDrawer.Draw(new Geometry(
-                        new[] {
+                        new[]
+                        {
                             new Vector3(screenPos.x - drawSize, screenPos.y, 0),
                             new Vector3(screenPos.x, screenPos.y + drawSize, 0),
                             new Vector3(screenPos.x + drawSize, screenPos.y, 0),
                             new Vector3(screenPos.x, screenPos.y - drawSize, 0)
                         },
-                        noteObj.NoteColor));
+                        noteObj.NoteColor
+                    ));
 
-                    if (noteObj.note.type == Notes.NoteTypes.Long && EditData.Notes.ContainsKey(noteObj.note.prev))
+                    // ============================
+                    // ★ Longノーツの prev 更新（横版と同じ構造）
+                    // ============================
+                    if (noteObj.note.type == Notes.NoteTypes.Long &&
+                        EditData.Notes.ContainsKey(noteObj.note.prev))
                     {
                         EditData.Notes[noteObj.note.prev].LateUpdateObservable.OnNext(Unit.Default);
                     }
