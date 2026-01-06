@@ -1,4 +1,5 @@
-﻿using NoteMaker.Notes;
+﻿
+using NoteMaker.Notes;
 using NoteMaker.Model;
 using NoteMaker.Utility;
 using System;
@@ -6,6 +7,7 @@ using System.Linq;
 using UniRx;
 using UniRx.Triggers;
 using UnityEngine;
+using System.Xml.Serialization;
 
 namespace NoteMaker.GLDrawing
 {
@@ -16,6 +18,10 @@ namespace NoteMaker.GLDrawing
         [SerializeField] Color beatLineColor1 = default;
         [SerializeField] Color beatLineColor2 = default;
         [SerializeField] Color beatLineColor3 = default;
+
+        [SerializeField] float horizontalOffset = 0f;     // 縦線・横線を横にずらす
+        [SerializeField] float lineWidthFactor = 1f;      // 横線の横幅を広げる
+        [SerializeField] float blockSpacingFactor = 1f;   // 縦線の間隔を広げる
 
         Color BeatLineColor(int beat) =>
             beat % (EditData.LPB.Value * 4) == 0 ? beatLineColor3 :
@@ -42,6 +48,9 @@ namespace NoteMaker.GLDrawing
                     var unitBeatSamples = Mathf.FloorToInt(Audio.Source.clip.frequency * 60f / EditData.BPM.Value);
                     var beatNum = EditData.LPB.Value * Mathf.CeilToInt(Audio.Source.clip.samples / (float)unitBeatSamples);
 
+                    // ============================
+                    // ★ BeatLine（横線）生成
+                    // ============================
                     if (beatSamples.Length != beatNum || cachedCanvasHeight != NoteCanvas.Height.Value)
                     {
                         beatSamples = Enumerable.Range(0, beatNum)
@@ -50,11 +59,14 @@ namespace NoteMaker.GLDrawing
 
                         beatLines = beatSamples
                             .Select(s => ConvertUtils.SamplesToCanvasPositionY(s))
-                            .Select((y, i) =>{
+                            .Select((y, i) =>
+                            {
                                 float len = 140 * BeatLineLengthFactor(i);
+                                float halfWidth = len * lineWidthFactor;
+
                                 return new Line(
-                                    ConvertUtils.CanvasToScreenPosition(new Vector3(-len, y, 0)),
-                                    ConvertUtils.CanvasToScreenPosition(new Vector3(+len, y, 0)),
+                                    ConvertUtils.CanvasToScreenPosition(new Vector3(halfWidth + horizontalOffset, y, 0)),
+                                    ConvertUtils.CanvasToScreenPosition(new Vector3(-halfWidth + horizontalOffset, y, 0)),
                                     BeatLineColor(i)
                                 );
                             })
@@ -65,10 +77,7 @@ namespace NoteMaker.GLDrawing
                     }
                     else
                     {
-                        float currentY = ConvertUtils.CanvasToScreenPosition(
-                            Vector3.up * ConvertUtils.SamplesToCanvasPositionY(0)
-                        ).y;
-
+                        float currentY = ConvertUtils.CanvasToScreenPosition(Vector3.up * ConvertUtils.SamplesToCanvasPositionY(0)).y;
                         float diffY = currentY - cachedZeroSamplePosY;
 
                         for (int i = 0; i < beatNum; i++)
@@ -80,17 +89,19 @@ namespace NoteMaker.GLDrawing
                         cachedZeroSamplePosY = currentY;
                     }
 
+                    // ============================
+                    // ★ BlockLine（縦線）生成
+                    // ============================
                     if (blockLines.Length != EditData.MaxBlock.Value)
                     {
                         blockLines = Enumerable.Range(0, EditData.MaxBlock.Value)
-                            .Select(i => ConvertUtils.BlockNumToCanvasPositionX(i))
-                            .Select(x => ConvertUtils.CanvasToScreenPosition(new Vector3(x, 0, 0)).x)
-                            .Select((x, i) => new Line(
-                                new Vector3(x, 0, 0),
-                                new Vector3(x, Screen.height, 0),
-                                blockLineColor
-                            ))
-                            .ToArray();
+                           .Select(i => ConvertUtils.BlockNumToCanvasPositionX(i) * blockSpacingFactor + horizontalOffset)
+                           .Select(canvasX => ConvertUtils.CanvasToScreenPosition(new Vector3(canvasX, 0, 0)).x)
+                           .Select((x, i) => new Line(
+                               new Vector3(x, 0, 0),
+                               new Vector3(x, Screen.height, 0),
+                               blockLineColor))
+                           .ToArray();
                     }
                     else
                     {
@@ -132,11 +143,8 @@ namespace NoteMaker.GLDrawing
                         }
                     }
 
-                    // ============================
-                    // ★ BeatNumber の密度調整（横版の intervalFactor を縦版にも導入）
-                    // ============================
                     var beatGridInterval = beatLines[EditData.LPB.Value * 4].start.y - beatLines[0].start.y;
-                    var beatGridMinInterval = 100;
+                    var beatGridMinInterval = 130;
                     var intervalFactor = beatGridInterval < beatGridMinInterval
                         ? Mathf.RoundToInt(beatGridMinInterval / beatGridInterval)
                         : 1;
@@ -154,12 +162,14 @@ namespace NoteMaker.GLDrawing
                         {
                             GLLineDrawer.Draw(beatLines[i]);
 
+                            // ★ 番号は horizontalOffset を適用しない（中央固定）
                             if (i % (EditData.LPB.Value * 4 * intervalFactor) == 0)
                             {
                                 BeatNumberRenderer.Render(
-                                    new Vector3(Screen.width / 2f + 100 / NoteCanvas.ScaleFactor.Value,
-                                                beatLines[i].start.y,
-                                                0),
+                                    new Vector3(
+                                        Screen.width / 2f + 100 / NoteCanvas.ScaleFactor.Value,
+                                        beatLines[i].start.y,
+                                        0),
                                     i / (EditData.LPB.Value * 4));
                             }
                         }

@@ -26,12 +26,9 @@ namespace NoteMaker.Model
         void Awake()
         {
             // ★ 画面幅に応じてスケールを決定（縦向きでもこのままでOK）
-            this.ObserveEveryValueChanged(_ => Screen.width)
+            this.ObserveEveryValueChanged(_ => Screen.height)
                 .DistinctUntilChanged()
-                .Subscribe(w => ScaleFactor.Value = 1280f / w);
-
-            // ★ Width の初期値を設定（レーン数に応じて変えるならここ）
-            Width.Value = 240f; // 必要に応じて変更
+                .Subscribe(w => ScaleFactor.Value = 720f / w);
         }
     }
 }
