@@ -120,7 +120,7 @@ namespace NoteMaker.Presenter
 
             var json = EditDataSerializer.Serialize();
             File.WriteAllText(filePath, json, System.Text.Encoding.UTF8);
-            messageText.text = filePath + " に保存しました";
+            messageText.text = "保存済み";
         }
     }
 }

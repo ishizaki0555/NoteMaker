@@ -1458,7 +1458,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.18060637, b: 1, a: 1}
+  m_Color: {r: 0, g: 1, b: 0.052975178, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1573,7 +1573,7 @@ MonoBehaviour:
   m_LineType: 0
   m_HideMobileInput: 0
   m_CharacterValidation: 1
-  m_CharacterLimit: 2
+  m_CharacterLimit: 4
   m_OnSubmit:
     m_PersistentCalls:
       m_Calls: []
@@ -1726,7 +1726,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.11449814, b: 1, a: 1}
+  m_Color: {r: 0, g: 1, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2150,8 +2150,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 557, y: 0}
-  m_SizeDelta: {x: 1000, y: 30}
+  m_AnchoredPosition: {x: 219.41461, y: -0.00000059605}
+  m_SizeDelta: {x: 506.8072, y: 50.4914}
   m_Pivot: {x: 1, y: 0.5}
 --- !u!114 &312309002
 MonoBehaviour:
@@ -2583,7 +2583,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0, g: 0.5849056, b: 0.5849056, a: 1}
+  m_BackGroundColor: {r: 0.22583662, g: 0.23584908, b: 0.23584908, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -7032,7 +7032,7 @@ MonoBehaviour:
   m_LineType: 0
   m_HideMobileInput: 0
   m_CharacterValidation: 1
-  m_CharacterLimit: 2
+  m_CharacterLimit: 4
   m_OnSubmit:
     m_PersistentCalls:
       m_Calls: []
@@ -8462,8 +8462,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 456, y: 259}
-  m_SizeDelta: {x: 700, y: 200}
+  m_AnchoredPosition: {x: 456, y: 271.10233}
+  m_SizeDelta: {x: 700, y: 114.7576}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1137710198
 MonoBehaviour:
@@ -11888,7 +11888,7 @@ MonoBehaviour:
   m_LineType: 0
   m_HideMobileInput: 0
   m_CharacterValidation: 1
-  m_CharacterLimit: 2
+  m_CharacterLimit: 4
   m_OnSubmit:
     m_PersistentCalls:
       m_Calls: []
@@ -12305,7 +12305,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.17825913, b: 1, a: 0.5254902}
+  m_Color: {r: 0, g: 1, b: 0, a: 0.5254902}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

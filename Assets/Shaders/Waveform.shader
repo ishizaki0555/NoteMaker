@@ -38,7 +38,7 @@
 
 				return lerp(
 					fixed4(0.1373, 0.1451, 0.13333, 0.0196),
-					fixed4(0, 0.1, 0.8, 0),
+					fixed4(0, 0.6, 0, 0),
 					-volume < uvY && uvY < volume
 				);
 			}

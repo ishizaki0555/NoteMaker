@@ -167,7 +167,7 @@ namespace NoteMaker.GLDrawing
                             {
                                 BeatNumberRenderer.Render(
                                     new Vector3(
-                                        Screen.width / 2f + 100 / NoteCanvas.ScaleFactor.Value,
+                                        Screen.width / 2f + 100 / NoteCanvas.ScaleFactor.Value - 100,
                                         beatLines[i].start.y,
                                         0),
                                     i / (EditData.LPB.Value * 4));

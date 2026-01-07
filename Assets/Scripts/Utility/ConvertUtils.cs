@@ -7,14 +7,15 @@ namespace NoteMaker.Utility
 {
     public class ConvertUtils : SingletonMonoBehaviour<ConvertUtils>
     {
-        // ★ Canvas Y → Samples（時間）
+        public static float canvasOffsetX = 375;
+        public static float blockSpacingFactor = 1.5f;
+
         public static int CanvasPositionYToSamples(float y)
         {
             var per = (y - SamplesToCanvasPositionY(0)) / NoteCanvas.Height.Value;
             return Mathf.RoundToInt(Audio.Source.clip.samples * per);
         }
 
-        // ★ Samples（時間）→ Canvas Y
         public static float SamplesToCanvasPositionY(int samples)
         {
             if (Audio.Source.clip == null)
@@ -25,7 +26,6 @@ namespace NoteMaker.Utility
                 + NoteCanvas.OffsetY.Value;
         }
 
-        // ★ Block（レーン番号）→ Canvas X
         public static float BlockNumToCanvasPositionX(int blockNum)
         {
             var width = 240f;
@@ -33,11 +33,16 @@ namespace NoteMaker.Utility
             return ((blockNum * width / maxIndex) - width / 2) / NoteCanvas.ScaleFactor.Value;
         }
 
+        public static float NoteCanvasPositionX(int blockNum)
+        {
+            return BlockNumToCanvasPositionX(blockNum) * blockSpacingFactor + canvasOffsetX;
+        }
+
         // ★ NotePosition → Canvas座標（縦向き）
         public static Vector3 NoteToCanvasPosition(NotePosition notePosition)
         {
             return new Vector3(
-                BlockNumToCanvasPositionX(notePosition.block) * NoteCanvas.ScaleFactor.Value,
+                NoteCanvasPositionX(notePosition.block) * NoteCanvas.ScaleFactor.Value,
                 SamplesToCanvasPositionY(notePosition.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value)),
                 0);
         }
