@@ -1,7 +1,5 @@
 ﻿using NoteMaker.Utility;
-using NoteMaker.Presenter;
 using System.Collections.Generic;
-using System.IO;
 using UniRx;
 using UnityEngine;
 

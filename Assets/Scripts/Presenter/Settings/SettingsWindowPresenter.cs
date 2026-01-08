@@ -18,7 +18,7 @@ namespace NoteMaker.Presenter
         static string fileName = "settings.json";
         static string filePath = Path.Combine(directoryPath, fileName);
 
-        string LoadSettingsJson()
+        public static string LoadSettingsJson()
         {
             if (!Directory.Exists(directoryPath))
             {
@@ -37,7 +37,6 @@ namespace NoteMaker.Presenter
         {
             File.WriteAllText(filePath, SettingsSerializer.Serialize(), System.Text.Encoding.UTF8);
         }
-
         void Awake()
         {
             SettingsSerializer.Deserialize(LoadSettingsJson());
@@ -64,7 +63,6 @@ namespace NoteMaker.Presenter
                     var item = obj.GetComponent<InputNoteKeyCodeSettingsItem>();
                     item.SetData(num, num < Settings.NoteInputKeyCodes.Value.Count ? Settings.NoteInputKeyCodes.Value[num] : KeyCode.None);
                 });
-
 
             Observable.Merge(
                      Settings.RequestForChangeInputNoteKeyCode.AsUnitObservable(),

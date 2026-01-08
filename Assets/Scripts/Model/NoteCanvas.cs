@@ -25,7 +25,6 @@ namespace NoteMaker.Model
 
         void Awake()
         {
-            // ★ 画面幅に応じてスケールを決定（縦向きでもこのままでOK）
             this.ObserveEveryValueChanged(_ => Screen.height)
                 .DistinctUntilChanged()
                 .Subscribe(w => ScaleFactor.Value = 720f / w);

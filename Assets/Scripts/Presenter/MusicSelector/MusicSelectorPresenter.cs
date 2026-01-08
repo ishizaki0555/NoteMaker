@@ -85,6 +85,7 @@ namespace NoteMaker.Presenter
 
             if (!Directory.Exists(MusicSelector.DirectoryPath.Value))
             {
+                SettingsSerializer.Deserialize(SettingsWindowPresenter.LoadSettingsJson());
                 Directory.CreateDirectory(MusicSelector.DirectoryPath.Value);
             }
         }
