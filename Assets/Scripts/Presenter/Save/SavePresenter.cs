@@ -109,6 +109,40 @@ namespace NoteMaker.Presenter
 
         public void Save()
         {
+            var musicName = EditData.Name.Value;
+            var difficultyName = EditData.Difficulty.Value;
+
+            // Notes/曲名/のフォルダを作成
+            var notesRoot = Path.Combine(Path.GetDirectoryName(MusicSelector.DirectoryPath.Value), "Notes");
+            var musicFolder = Path.Combine(notesRoot, musicName);
+
+            if(!Directory.Exists(musicFolder))
+            {
+                Directory.CreateDirectory(musicFolder);
+            }
+
+            // 譜面ファイルの保存先
+            var jsonFileName = $"{difficultyName}.json";
+            var jsonPath = Path.Combine(musicFolder, jsonFileName);
+
+            // 譜面データを保存
+            var json = EditDataSerializer.Serialize();
+            File.WriteAllText(jsonPath, json, System.Text.Encoding.UTF8);
+
+            // 曲ファイルのコピー
+            var musicFilePath = MusicSelector.DirectoryPath.Value;
+            if(File.Exists(musicFilePath))
+            {
+                var musicFileName = Path.GetFileName(musicFilePath);
+                var destMusicpath = Path.Combine(musicFolder, musicFileName);
+
+                // 上書きコピー
+                File.Copy(musicFilePath, destMusicpath, true);
+            }
+
+            messageText.text = "保存済み";
+
+            /*
             var fileName = Path.ChangeExtension(EditData.Name.Value, "json");
             var directoryPath = Path.Combine(Path.GetDirectoryName(MusicSelector.DirectoryPath.Value), "Notes");
             var filePath = Path.Combine(directoryPath, fileName);
@@ -121,6 +155,7 @@ namespace NoteMaker.Presenter
             var json = EditDataSerializer.Serialize();
             File.WriteAllText(filePath, json, System.Text.Encoding.UTF8);
             messageText.text = "保存済み";
+            */
         }
     }
 }
