@@ -16,6 +16,7 @@ namespace NoteMaker.Presenter
 
         public void Load(string fileName)
         {
+            EditData.Name.Value = Path.GetFileNameWithoutExtension(fileName);
             StartCoroutine(LoadMusic(fileName));
         }
 
@@ -36,22 +37,48 @@ namespace NoteMaker.Presenter
                 else
                 {
                     EditData.Name.Value = fileName;
-                    LoadEditData();
+                    var difficultyName = EditData.DifficultyName.Value;
+                    LoadEditData(difficultyName);
+
+                    Loadbanner(EditData.Name.Value);
+
                     Audio.OnLoad.OnNext(Unit.Default);
                 }
             }
         }
 
-        void LoadEditData()
+        void LoadEditData(string difficultyName)
         {
-            var fileName = Path.ChangeExtension(EditData.Name.Value, "json");
-            var directoryPath = Path.Combine(Path.GetDirectoryName(MusicSelector.DirectoryPath.Value), "Notes");
-            var filePath = Path.Combine(directoryPath, fileName);
+            var musicName = Path.GetFileNameWithoutExtension(EditData.Name.Value);
+            var bannerPath = BannerFileUtility.GetBannerPath(musicName);
 
-            if (File.Exists(filePath))
+            var notesRoot = Path.Combine(Path.GetDirectoryName(MusicSelector.DirectoryPath.Value), "Notes");
+            var musicFolder = Path.Combine(notesRoot, musicName);
+
+            var jsonPath = Path.Combine(musicFolder, $"{difficultyName}.json");
+
+            if(File.Exists(jsonPath))
             {
-                var json = File.ReadAllText(filePath, System.Text.Encoding.UTF8);
+                var json = File.ReadAllText(jsonPath, System.Text.Encoding.UTF8);
                 EditDataSerializer.Deserialize(json);
+            }
+            else
+            {
+                Debug.LogError($"該当の難易度が見つかりませんでした。{difficultyName}, {jsonPath}");
+            }
+        }
+
+        void Loadbanner(string musicName)
+        {
+            var bannerPath = BannerFileUtility.GetBannerPath(musicName);
+
+            if(!string.IsNullOrEmpty(bannerPath))
+            {
+                BannerSettings.BannerPath.Value = bannerPath;
+            }
+            else
+            {
+                BannerSettings.BannerPath.Value = "";
             }
         }
 

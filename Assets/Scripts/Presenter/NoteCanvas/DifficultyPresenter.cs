@@ -16,15 +16,8 @@ namespace NoteMaker.Presenter
 
         void Awake()
         {
-            var difficulty = EditData.Difficulty;
             var difficultyName = EditData.DifficultyName;
 
-            // ReactiveProperty ¨ Dropdown
-            difficulty.Subscribe(x =>
-            {
-                if (dropdown.value != x)
-                    dropdown.value = x;
-            }).AddTo(this);
 
             // Dropdown ¨ ReactivePropertyiUndo/Redo‘Î‰žj
             dropdown.onValueChanged.AsObservable()
@@ -36,22 +29,18 @@ namespace NoteMaker.Presenter
                         new Command(
                             () =>
                             {
-                                difficulty.Value = index;
                                 difficultyName.Value = name;
 
                                 LoadDifficultyChart(name);
                             },
                             () =>
                             {
-                                // Undo Žž‚ÍŒ³‚Ì’l‚É–ß‚·
-                                difficulty.Value = difficulty.Value;
                                 difficultyName.Value = difficultyName.Value;
 
                                 LoadDifficultyChart(name);
                             },
                             () =>
                             {
-                                difficulty.Value = index;
                                 difficultyName.Value = name;
 
                                 LoadDifficultyChart(name);
@@ -63,7 +52,7 @@ namespace NoteMaker.Presenter
 
         void LoadDifficultyChart(string difficultyName)
         {
-            var musicName = EditData.Name.Value;
+            var musicName = Path.GetFileNameWithoutExtension(EditData.Name.Value);
 
             var notesRoot = Path.Combine(Path.GetDirectoryName(MusicSelector.DirectoryPath.Value), "Notes");
             var musicFolder = Path.Combine(notesRoot, musicName);
@@ -72,6 +61,7 @@ namespace NoteMaker.Presenter
 
             if(File.Exists(jsonPath))
             {
+                EditData.Notes.Clear();
                 var json = File.ReadAllText(jsonPath);
                 EditDataSerializer.Deserialize(json);
             }

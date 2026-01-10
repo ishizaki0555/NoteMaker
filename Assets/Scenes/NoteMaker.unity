@@ -1067,6 +1067,8 @@ GameObject:
   m_Component:
   - component: {fileID: 147171576}
   - component: {fileID: 147171577}
+  - component: {fileID: 147171579}
+  - component: {fileID: 147171578}
   m_Layer: 5
   m_Name: BannerSettings
   m_TagString: Untagged
@@ -1103,6 +1105,32 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 147171575}
   m_CullTransparentMesh: 0
+--- !u!114 &147171578
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 147171575}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95c5ba3000971f54eb23e72c2d404e82, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectBannerButton: {fileID: 424791854}
+  previewImage: {fileID: 424791855}
+--- !u!114 &147171579
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 147171575}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fc2990b5a882bc468ce28825b1531f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &174093828
 GameObject:
   m_ObjectHideFlags: 0

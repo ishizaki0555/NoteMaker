@@ -109,8 +109,8 @@ namespace NoteMaker.Presenter
 
         public void Save()
         {
-            var musicName = EditData.Name.Value;
-            var difficultyName = EditData.Difficulty.Value;
+            var musicName = Path.GetFileNameWithoutExtension(EditData.Name.Value);
+            var difficultyName = EditData.DifficultyName.Value;
 
             // Notes/曲名/のフォルダを作成
             var notesRoot = Path.Combine(Path.GetDirectoryName(MusicSelector.DirectoryPath.Value), "Notes");
@@ -141,21 +141,6 @@ namespace NoteMaker.Presenter
             }
 
             messageText.text = "保存済み";
-
-            /*
-            var fileName = Path.ChangeExtension(EditData.Name.Value, "json");
-            var directoryPath = Path.Combine(Path.GetDirectoryName(MusicSelector.DirectoryPath.Value), "Notes");
-            var filePath = Path.Combine(directoryPath, fileName);
-
-            if (!Directory.Exists(directoryPath))
-            {
-                Directory.CreateDirectory(directoryPath);
-            }
-
-            var json = EditDataSerializer.Serialize();
-            File.WriteAllText(filePath, json, System.Text.Encoding.UTF8);
-            messageText.text = "保存済み";
-            */
         }
     }
 }
