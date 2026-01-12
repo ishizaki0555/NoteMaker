@@ -11,22 +11,16 @@ namespace NoteMaker.Presenter
 {
     public class MusicSelectorPresenter : MonoBehaviour
     {
-        [SerializeField]
-        InputField directoryPathInputField = default;
-        [SerializeField]
-        GameObject fileItemPrefab = default;
-        [SerializeField]
-        GameObject fileItemContainer = default;
-        [SerializeField]
-        Transform fileItemContainerTransform = default;
-        [SerializeField]
-        Button redoButton = default;
-        [SerializeField]
-        Button undoButton = default;
-        [SerializeField]
-        Button loadButton = default;
-        [SerializeField]
-        MusicLoader musicLoader = default;
+        [SerializeField] InputField directoryPathInputField = default;
+        [SerializeField] GameObject fileItemPrefab = default;
+        [SerializeField] GameObject fileItemContainer = default;
+        [SerializeField] Transform fileItemContainerTransform = default;
+        [SerializeField] Button redoButton = default;
+        [SerializeField] Button undoButton = default;
+        [SerializeField] Button loadButton = default;
+        [SerializeField] Button openNotesButton = default;
+        [SerializeField] Button openMusicsButton = default;
+        [SerializeField] MusicLoader musicLoader = default;
 
         void Start()
         {
@@ -83,11 +77,49 @@ namespace NoteMaker.Presenter
                 .Where(fileName => !string.IsNullOrEmpty(fileName))
                 .Subscribe(fileName => musicLoader.Load(fileName));
 
+            openNotesButton.OnClickAsObservable()
+                .Subscribe(_ => OpenNotesFolder());
+
+            openMusicsButton.OnClickAsObservable()
+                .Subscribe(_ => OpenMusicsFolder());
+
             if (!Directory.Exists(MusicSelector.DirectoryPath.Value))
             {
                 SettingsSerializer.Deserialize(SettingsWindowPresenter.LoadSettingsJson());
                 Directory.CreateDirectory(MusicSelector.DirectoryPath.Value);
             }
+        }
+
+        void OpenNotesFolder()
+        {
+            // Notesフォルダ
+            var notesRoot = Path.Combine(
+                Path.GetDirectoryName(MusicSelector.DirectoryPath.Value), "Notes");
+
+            // なければ作る
+            if (Directory.Exists(notesRoot))
+            {
+                Directory.CreateDirectory (notesRoot);
+            }
+
+            // Windowsのエクスプローラーで開く
+            System.Diagnostics.Process.Start(notesRoot);
+        }
+
+        void OpenMusicsFolder()
+        {
+            // Notesフォルダ
+            var musicsRoot = Path.Combine(
+                Path.GetDirectoryName(MusicSelector.DirectoryPath.Value), "Musics");
+
+            // なければ作る
+            if (Directory.Exists(musicsRoot))
+            {
+                Directory.CreateDirectory(musicsRoot);
+            }
+
+            // Windowsのエクスプローラーで開く
+            System.Diagnostics.Process.Start(musicsRoot);
         }
     }
 }

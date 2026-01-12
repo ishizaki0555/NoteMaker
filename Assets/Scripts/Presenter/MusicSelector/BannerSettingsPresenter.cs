@@ -18,8 +18,16 @@ namespace NoteMaker.Presenter
                 .Subscribe(_ => OpenFileDialog());
 
             BannerSettings.BannerPath
-                .Where(path => !string.IsNullOrEmpty(path))
-                .Subscribe(path => LoadPreview(path));
+                .Subscribe(path =>
+                {
+                    if (string.IsNullOrEmpty(path))
+                    {
+                        previewImage.sprite = null;
+                        return;
+                    }
+                    LoadPreview(path);
+                })
+                .AddTo(this);
         }
 
         void OpenFileDialog()
@@ -57,14 +65,10 @@ namespace NoteMaker.Presenter
     {
         public static void SaveBannerToMusicFolder(string sourcePath, string musicName)
         {
-            var notesRoot = Path.Combine(
-                Path.GetDirectoryName(MusicSelector.DirectoryPath.Value),
-                "Notes"
-            );
-
+            var notesRoot = Path.Combine(Path.GetDirectoryName(MusicSelector.DirectoryPath.Value), "Notes");
             var musicFolder = Path.Combine(notesRoot, musicName);
 
-            if (!Directory.Exists(musicFolder))
+            if(!Directory.Exists(musicFolder))
             {
                 Directory.CreateDirectory(musicFolder);
             }
@@ -72,6 +76,17 @@ namespace NoteMaker.Presenter
             var ext = Path.GetExtension(sourcePath);
             var destPath = Path.Combine(musicFolder, "banner" + ext);
 
+            // å√Ç¢ÉoÉiÅ[ÇçÌèú
+            var oldPng = Path.Combine(musicFolder, "banner.png");
+            var oldJpg = Path.Combine(musicFolder, "banner.jpg");
+            var oldJpeg = Path.Combine(musicFolder, "banner.jpeg");
+
+            if (File.Exists(oldPng)) File.Delete(oldPng);
+            if (File.Exists(oldJpg)) File.Delete(oldJpg);
+            if (File.Exists(oldJpeg)) File.Delete(oldJpeg);
+
+
+            // è„èëÇ´
             File.Copy(sourcePath, destPath, overwrite: true);
         }
 

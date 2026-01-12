@@ -36,11 +36,11 @@ namespace NoteMaker.Presenter
                 }
                 else
                 {
-                    EditData.Name.Value = fileName;
+                    EditData.Name.Value = Path.GetFileNameWithoutExtension(fileName);
                     var difficultyName = EditData.DifficultyName.Value;
                     LoadEditData(difficultyName);
 
-                    Loadbanner(EditData.Name.Value);
+                    LoadBanner(EditData.Name.Value);
 
                     Audio.OnLoad.OnNext(Unit.Default);
                 }
@@ -64,22 +64,16 @@ namespace NoteMaker.Presenter
             }
             else
             {
+#if ENABLE_UNITYEVENTS
                 Debug.LogError($"該当の難易度が見つかりませんでした。{difficultyName}, {jsonPath}");
+#endif
             }
         }
 
-        void Loadbanner(string musicName)
+        void LoadBanner(string musicName)
         {
             var bannerPath = BannerFileUtility.GetBannerPath(musicName);
-
-            if(!string.IsNullOrEmpty(bannerPath))
-            {
-                BannerSettings.BannerPath.Value = bannerPath;
-            }
-            else
-            {
-                BannerSettings.BannerPath.Value = "";
-            }
+            BannerSettings.BannerPath.Value = bannerPath ?? "";
         }
 
         public void ResetEditor()
