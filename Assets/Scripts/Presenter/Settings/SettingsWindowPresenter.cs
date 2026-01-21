@@ -9,10 +9,8 @@ namespace NoteMaker.Presenter
 {
     public class SettingsWindowPresenter : MonoBehaviour
     {
-        [SerializeField]
-        GameObject itemPrefab = default;
-        [SerializeField]
-        Transform itemContentTransform = default;
+        [SerializeField] GameObject itemPrefab = default;
+        [SerializeField] Transform itemContentTransform = default;
 
         static string directoryPath = Path.Combine(Directory.GetCurrentDirectory(), "Settings");
         static string fileName = "settings.json";

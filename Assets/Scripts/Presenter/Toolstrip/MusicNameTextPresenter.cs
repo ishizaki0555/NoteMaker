@@ -7,8 +7,7 @@ namespace NoteMaker.Presenter
 {
     public class MusicNameTextPresenter : MonoBehaviour
     {
-        [SerializeField]
-        Text musicNameText = default;
+        [SerializeField] Text musicNameText = default;
 
         void Awake()
         {

@@ -11,8 +11,7 @@ namespace NoteMaker.Presenter
 {
     public class DifficultyPresenter : MonoBehaviour
     {
-        [SerializeField]
-        Dropdown dropdown = default;
+        [SerializeField] Dropdown dropdown = default;
 
         void Awake()
         {

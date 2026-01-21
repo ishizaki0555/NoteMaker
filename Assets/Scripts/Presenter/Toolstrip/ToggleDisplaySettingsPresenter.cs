@@ -8,10 +8,8 @@ namespace NoteMaker.Presenter
 {
     public class ToggleDisplaySettingsPresenter : MonoBehaviour
     {
-        [SerializeField]
-        Button toggleDisplaySettingsButton = default;
-        [SerializeField]
-        GameObject settingsWindow = default;
+        [SerializeField] Button toggleDisplaySettingsButton = default;
+        [SerializeField] GameObject settingsWindow = default;
 
         bool isMouseOverSettingsWindow = false;
 

@@ -13,8 +13,7 @@ namespace NoteMaker.Presenter
 {
     public class RangeSelectionPresenter : MonoBehaviour
     {
-        [SerializeField]
-        Color selectionRectColor = default;
+        [SerializeField] Color selectionRectColor = default;
 
         Dictionary<NotePosition, NoteObject> selectedNoteObjects = new Dictionary<NotePosition, NoteObject>();
         List<Note> copiedNotes = new List<Note>();

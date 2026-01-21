@@ -8,12 +8,9 @@ namespace NoteMaker.Presenter
 {
     public class TogglePlayPausePresenter : MonoBehaviour
     {
-        [SerializeField]
-        Button togglePlayPauseButton = default;
-        [SerializeField]
-        Sprite iconPlay = default;
-        [SerializeField]
-        Sprite iconPause = default;
+        [SerializeField] Button togglePlayPauseButton = default;
+        [SerializeField] Sprite iconPlay = default;
+        [SerializeField] Sprite iconPause = default;
 
         void Awake()
         {

@@ -9,12 +9,9 @@ namespace NoteMaker.Presenter
 {
     public class CanvasOffsetYPresenter : MonoBehaviour
     {
-        [SerializeField]
-        CanvasEvents canvasEvents = default;
-        [SerializeField]
-        RectTransform horizontalLineRect = default;   // ← 縦向きなので水平ライン
-        [SerializeField]
-        RectTransform waveformRenderImage = default;
+        [SerializeField] CanvasEvents canvasEvents = default;
+        [SerializeField] RectTransform horizontalLineRect = default;
+        [SerializeField] RectTransform waveformRenderImage = default;
 
         void Awake()
         {

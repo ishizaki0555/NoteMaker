@@ -8,8 +8,7 @@ namespace NoteMaker.GLDrawing
 {
     public class WaveformRenderer : MonoBehaviour
     {
-        [SerializeField]
-        RawImage image = default;
+        [SerializeField] RawImage image = default;
 
         Texture2D texture;
 

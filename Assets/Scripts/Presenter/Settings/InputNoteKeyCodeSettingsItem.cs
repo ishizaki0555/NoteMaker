@@ -9,14 +9,10 @@ namespace NoteMaker.Presenter
 {
     public class InputNoteKeyCodeSettingsItem : MonoBehaviour
     {
-        [SerializeField]
-        Color selectedStateBackgroundColor = default;
-        [SerializeField]
-        Color defaultBackgroundColor = default;
-        [SerializeField]
-        Color selectedTextColor = default;
-        [SerializeField]
-        Color defaultTextColor = default;
+        [SerializeField] Color selectedStateBackgroundColor = default;
+        [SerializeField] Color defaultBackgroundColor = default;
+        [SerializeField] Color selectedTextColor = default;
+        [SerializeField] Color defaultTextColor = default;
 
         ReactiveProperty<KeyCode> keyCode = new ReactiveProperty<KeyCode>();
         int block;

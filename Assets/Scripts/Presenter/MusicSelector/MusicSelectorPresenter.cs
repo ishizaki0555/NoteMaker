@@ -89,7 +89,6 @@ namespace NoteMaker.Presenter
                 Directory.CreateDirectory(MusicSelector.DirectoryPath.Value);
             }
         }
-
         void OpenNotesFolder()
         {
             // Notesフォルダ

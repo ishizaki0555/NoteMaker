@@ -7,8 +7,7 @@ namespace NoteMaker.GLDrawing
 {
     public class BeatNumberRenderer : SingletonMonoBehaviour<BeatNumberRenderer>
     {
-        [SerializeField]
-        GameObject beatNumberPrefab = default;
+        [SerializeField] GameObject beatNumberPrefab = default;
 
         List<RectTransform> rectTransformPool = new List<RectTransform>();
         List<Text> textPool = new List<Text>();

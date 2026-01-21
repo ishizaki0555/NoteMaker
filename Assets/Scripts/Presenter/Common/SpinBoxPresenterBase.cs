@@ -11,33 +11,25 @@ namespace NoteMaker.Presenter
 {
     public abstract class SpinBoxPresenterBase : MonoBehaviour
     {
-        [SerializeField]
-        InputField inputField = default;
-        [SerializeField]
-        Button increaseButton = default;
-        [SerializeField]
-        Button decreaseButton = default;
-        [SerializeField]
-        int valueStep = default;
-        [SerializeField]
-        int minValue = default;
-        [SerializeField]
-        int maxValue = default;
-        [SerializeField]
-        int longPressTriggerMilliseconds = default;
-        [SerializeField]
-        int continuousPressIntervalMilliseconds = default;
+        [SerializeField] InputField inputField = default;
+        [SerializeField] Button increaseButton = default;
+        [SerializeField] Button decreaseButton = default;
+        [SerializeField] int valueStep = default;
+        [SerializeField] int minValue = default;
+        [SerializeField] int maxValue = default;
+        [SerializeField] int longPressTriggerMilliseconds = default;
+        [SerializeField] int continuousPressIntervalMilliseconds = default;
 
-        Subject<int> _operateSpinButtonObservable = new Subject<int>();
+        Subject<int> operateSpinButtonObservable = new Subject<int>();
 
         protected abstract ReactiveProperty<int> GetReactiveProperty();
 
         void Awake()
         {
-            increaseButton.AddListener(EventTriggerType.PointerUp, e => _operateSpinButtonObservable.OnNext(0));
-            decreaseButton.AddListener(EventTriggerType.PointerUp, e => _operateSpinButtonObservable.OnNext(0));
-            increaseButton.AddListener(EventTriggerType.PointerDown, e => _operateSpinButtonObservable.OnNext(valueStep));
-            decreaseButton.AddListener(EventTriggerType.PointerDown, e => _operateSpinButtonObservable.OnNext(-valueStep));
+            increaseButton.AddListener(EventTriggerType.PointerUp, e => operateSpinButtonObservable.OnNext(0));
+            decreaseButton.AddListener(EventTriggerType.PointerUp, e => operateSpinButtonObservable.OnNext(0));
+            increaseButton.AddListener(EventTriggerType.PointerDown, e => operateSpinButtonObservable.OnNext(valueStep));
+            decreaseButton.AddListener(EventTriggerType.PointerDown, e => operateSpinButtonObservable.OnNext(-valueStep));
 
             var property = GetReactiveProperty();
 
@@ -47,13 +39,13 @@ namespace NoteMaker.Presenter
                 .Where(x => Regex.IsMatch(x, @"^[0-9]+$"))
                 .Select(x => int.Parse(x));
 
-            var updateValueFromSpinButtonStream = _operateSpinButtonObservable
+            var updateValueFromSpinButtonStream = operateSpinButtonObservable
                 .Throttle(TimeSpan.FromMilliseconds(longPressTriggerMilliseconds))
                 .Where(delta => delta != 0)
                 .SelectMany(delta => Observable.Interval(TimeSpan.FromMilliseconds(continuousPressIntervalMilliseconds))
-                    .TakeUntil(_operateSpinButtonObservable.Where(d => d == 0))
+                    .TakeUntil(operateSpinButtonObservable.Where(d => d == 0))
                     .Select(_ => delta))
-                .Merge(_operateSpinButtonObservable.Where(d => d != 0))
+                .Merge(operateSpinButtonObservable.Where(d => d != 0))
                 .Select(delta => property.Value + delta);
 
             var isUndoRedoAction = false;

@@ -8,7 +8,6 @@ namespace NoteMaker.DTO
         public class EditData
         {
             public string name;
-            public string difficulty;
             public int maxBlock;
             public int BPM;
             public int offset;

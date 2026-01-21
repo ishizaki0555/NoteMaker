@@ -7,16 +7,11 @@ namespace NoteMaker.Presenter
 {
     public class VolumePresenter : MonoBehaviour
     {
-        [SerializeField]
-        Slider volumeController = default;
-        [SerializeField]
-        Image image = default;
-        [SerializeField]
-        Sprite iconSound2 = default;
-        [SerializeField]
-        Sprite iconSound = default;
-        [SerializeField]
-        Sprite iconMute = default;
+        [SerializeField] Slider volumeController = default;
+        [SerializeField] Image image = default;
+        [SerializeField] Sprite iconSound2 = default;
+        [SerializeField] Sprite iconSound = default;
+        [SerializeField] Sprite iconMute = default;
 
         void Awake()
         {

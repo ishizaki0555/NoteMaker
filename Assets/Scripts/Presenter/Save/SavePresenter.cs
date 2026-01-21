@@ -12,25 +12,16 @@ namespace NoteMaker.Presenter
 {
     public class SavePresenter : MonoBehaviour
     {
-        [SerializeField]
-        Button saveButton = default;
-        [SerializeField]
-        Text messageText = default;
-        [SerializeField]
-        Color unsavedStateButtonColor = default;
-        [SerializeField]
-        Color savedStateButtonColor = Color.white;
+        [SerializeField] Button saveButton = default;
+        [SerializeField] Text messageText = default;
+        [SerializeField] Color unsavedStateButtonColor = default;
+        [SerializeField] Color savedStateButtonColor = Color.white;
 
-        [SerializeField]
-        GameObject saveDialog = default;
-        [SerializeField]
-        Button dialogSaveButton = default;
-        [SerializeField]
-        Button dialogDoNotSaveButton = default;
-        [SerializeField]
-        Button dialogCancelButton = default;
-        [SerializeField]
-        Text dialogMessageText = default;
+        [SerializeField] GameObject saveDialog = default;
+        [SerializeField] Button dialogSaveButton = default;
+        [SerializeField] Button dialogDoNotSaveButton = default;
+        [SerializeField] Button dialogCancelButton = default;
+        [SerializeField] Text dialogMessageText = default;
 
         ReactiveProperty<bool> mustBeSaved = new ReactiveProperty<bool>();
 

@@ -12,10 +12,8 @@ namespace NoteMaker.Presenter
 {
     public class EditSectionHandlePresenter : MonoBehaviour
     {
-        [SerializeField]
-        Image handleImage = default;
-        [SerializeField]
-        RectTransform lineRectTransform = default;
+        [SerializeField] Image handleImage = default;
+        [SerializeField] RectTransform lineRectTransform = default;
 
         ReactiveProperty<int> CurrentSamples = new ReactiveProperty<int>(0);
         ReactiveProperty<float> position_ = new ReactiveProperty<float>();

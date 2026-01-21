@@ -6,8 +6,7 @@ namespace NoteMaker.GLDrawing
 {
     public class GLLineDrawer : SingletonMonoBehaviour<GLLineDrawer>
     {
-        [SerializeField]
-        Material mat = default;
+        [SerializeField] Material mat = default;
 
         List<Line> drawData = new List<Line>();
 

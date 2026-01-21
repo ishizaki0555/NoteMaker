@@ -8,14 +8,10 @@ namespace NoteMaker.Presenter
 {
     public class SettingWorkSpacePathPresenter : MonoBehaviour
     {
-        [SerializeField]
-        InputField workSpacePathInputField = default;
-        [SerializeField]
-        Text workSpacePathInputFieldText = default;
-        [SerializeField]
-        Color defaultTextColor = default;
-        [SerializeField]
-        Color invalidStateTextColor = default;
+        [SerializeField] InputField workSpacePathInputField = default;
+        [SerializeField] Text workSpacePathInputFieldText = default;
+        [SerializeField] Color defaultTextColor = default;
+        [SerializeField] Color invalidStateTextColor = default;
 
         void Awake()
         {

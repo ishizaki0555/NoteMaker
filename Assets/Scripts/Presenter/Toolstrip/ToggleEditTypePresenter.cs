@@ -10,16 +10,11 @@ namespace NoteMaker.Presenter
 {
     public class ToggleEditTypePresenter : MonoBehaviour
     {
-        [SerializeField]
-        Button editTypeToggleButton = default;
-        [SerializeField]
-        Sprite iconLongNotes = default;
-        [SerializeField]
-        Sprite iconSingleNotes = default;
-        [SerializeField]
-        Color longTypeStateButtonColor = default;
-        [SerializeField]
-        Color singleTypeStateButtonColor = default;
+        [SerializeField] Button editTypeToggleButton = default;
+        [SerializeField] Sprite iconLongNotes = default;
+        [SerializeField] Sprite iconSingleNotes = default;
+        [SerializeField] Color longTypeStateButtonColor = default;
+        [SerializeField] Color singleTypeStateButtonColor = default;
 
         void Awake()
         {

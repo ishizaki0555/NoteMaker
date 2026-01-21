@@ -12,12 +12,9 @@ namespace NoteMaker.Presenter
 {
     public class PlaybackPositionPresenter : MonoBehaviour
     {
-        [SerializeField]
-        CanvasEvents canvasEvents = default;
-        [SerializeField]
-        Slider playbackPositionController = default;
-        [SerializeField]
-        Text playbackTimeDisplayText = default;
+        [SerializeField] CanvasEvents canvasEvents = default;
+        [SerializeField] Slider playbackPositionController = default;
+        [SerializeField] Text playbackTimeDisplayText = default;
 
         void Awake()
         {

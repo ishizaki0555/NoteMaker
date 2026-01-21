@@ -8,22 +8,14 @@ namespace NoteMaker.Presenter
 {
     public class FileListItem : MonoBehaviour
     {
-        [SerializeField]
-        Color selectedStateBackgroundColor = default;
-        [SerializeField]
-        Color defaultBackgroundColor = default;
-        [SerializeField]
-        Color selectedTextColor = default;
-        [SerializeField]
-        Color defaultTextColor = default;
-        [SerializeField]
-        Image itemTypeIcon = default;
-        [SerializeField]
-        Sprite directoryIcon = default;
-        [SerializeField]
-        Sprite musicFileIcon = default;
-        [SerializeField]
-        Sprite otherFileIcon = default;
+        [SerializeField] Color selectedStateBackgroundColor = default;
+        [SerializeField] Color defaultBackgroundColor = default;
+        [SerializeField] Color selectedTextColor = default;
+        [SerializeField] Color defaultTextColor = default;
+        [SerializeField] Image itemTypeIcon = default;
+        [SerializeField] Sprite directoryIcon = default;
+        [SerializeField] Sprite musicFileIcon = default;
+        [SerializeField] Sprite otherFileIcon = default;
 
         string itemName;
         FileItemInfo fileItemInfo;
