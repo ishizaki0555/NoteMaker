@@ -65,7 +65,9 @@ namespace NoteMaker.Presenter
     {
         public static void SaveBannerToMusicFolder(string sourcePath, string musicName)
         {
-            var notesRoot = Path.Combine(Path.GetDirectoryName(MusicSelector.DirectoryPath.Value), "Notes");
+            var notesRoot = Path.Combine(
+                Path.GetDirectoryName(MusicSelector.DirectoryPath.Value),
+                "Notes");
             var musicFolder = Path.Combine(notesRoot, musicName);
 
             if(!Directory.Exists(musicFolder))

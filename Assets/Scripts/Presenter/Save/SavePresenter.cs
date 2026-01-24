@@ -120,6 +120,21 @@ namespace NoteMaker.Presenter
             var json = EditDataSerializer.Serialize();
             File.WriteAllText(jsonPath, json, System.Text.Encoding.UTF8);
 
+            // 曲のファイルをコピー
+            var sourceMusicPath = Path.Combine(
+                MusicSelector.DirectoryPath.Value,
+                MusicSelector.SelectedFileName.Value);
+
+            if(File.Exists(sourceMusicPath))
+            {
+                // 元の拡張子を取得
+                var ext = Path.GetExtension(sourceMusicPath);
+                // 保存先は Notes/曲名/曲名.拡張子
+                var destMusicPath = Path.Combine(musicFolder, "music" + ext);
+                // 上書きコピー
+                File.Copy(sourceMusicPath, destMusicPath, true);
+            }
+
             // 曲ファイルのコピー
             var musicFilePath = MusicSelector.DirectoryPath.Value;
             if(File.Exists(musicFilePath))
