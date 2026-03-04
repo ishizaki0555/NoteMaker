@@ -1,4 +1,19 @@
-﻿using NoteMaker.Model;
+﻿// ========================================
+//
+// NoteMaker Project
+//
+// ========================================
+//
+// SavePresenter.cs
+// ノーツ編集内容の保存・未保存状態の管理・終了時の保存確認ダイアログを扱う
+// プレゼンターです。Ctrl+S や保存ボタンでの保存、未保存状態の検知、
+// アプリ終了時の確認ダイアログ表示など、エディタの「保存まわり」を統括します。
+// 
+// ※「Note」はすべて「ノーツ」表記に統一しています。
+//
+//========================================
+
+using NoteMaker.Model;
 using NoteMaker.Utility;
 using System.IO;
 using System.Linq;
@@ -10,51 +25,77 @@ using UnityEngine.UI;
 
 namespace NoteMaker.Presenter
 {
+    /// <summary>
+    /// ノーツ編集データの保存・未保存状態管理・終了時ダイアログを扱うクラスです。
+    /// ・Ctrl+S / 保存ボタンで保存  
+    /// ・未保存状態の検知（BPM/Offset/MaxBlock/ノーツ編集など）  
+    /// ・保存ボタンの色変更  
+    /// ・アプリ終了時の保存確認ダイアログ  
+    /// </summary>
     public class SavePresenter : MonoBehaviour
     {
-        [SerializeField] Button saveButton = default;
-        [SerializeField] Text messageText = default;
-        [SerializeField] Color unsavedStateButtonColor = default;
-        [SerializeField] Color savedStateButtonColor = Color.white;
+        [SerializeField] Button saveButton = default;                 // 保存ボタン
+        [SerializeField] Text messageText = default;                  // 状態メッセージ
+        [SerializeField] Color unsavedStateButtonColor = default;     // 未保存時の色
+        [SerializeField] Color savedStateButtonColor = Color.white;   // 保存済みの色
 
-        [SerializeField] GameObject saveDialog = default;
-        [SerializeField] Button dialogSaveButton = default;
-        [SerializeField] Button dialogDoNotSaveButton = default;
-        [SerializeField] Button dialogCancelButton = default;
-        [SerializeField] Text dialogMessageText = default;
+        [SerializeField] GameObject saveDialog = default;             // 保存確認ダイアログ
+        [SerializeField] Button dialogSaveButton = default;           // ダイアログ：保存
+        [SerializeField] Button dialogDoNotSaveButton = default;      // ダイアログ：保存しない
+        [SerializeField] Button dialogCancelButton = default;         // ダイアログ：キャンセル
+        [SerializeField] Text dialogMessageText = default;            // ダイアログメッセージ
 
-        ReactiveProperty<bool> mustBeSaved = new ReactiveProperty<bool>();
+        ReactiveProperty<bool> mustBeSaved = new ReactiveProperty<bool>(); // 未保存状態
 
         void Awake()
         {
             var editPresenter = EditNotesPresenter.Instance;
 
+            //===============================
+            // Esc → アプリ終了
+            //===============================
             this.UpdateAsObservable()
                 .Where(_ => Input.GetKeyDown(KeyCode.Escape))
                 .Subscribe(_ => Application.Quit());
 
-            var saveActionObservable = this.UpdateAsObservable()
-                .Where(_ => KeyInput.CtrlPlus(KeyCode.S))
-                .Merge(saveButton.OnClickAsObservable());
+            //===============================
+            // 保存アクション（Ctrl+S / ボタン）
+            //===============================
+            var saveActionObservable =
+                this.UpdateAsObservable()
+                    .Where(_ => KeyInput.CtrlPlus(KeyCode.S))
+                    .Merge(saveButton.OnClickAsObservable());
 
-            mustBeSaved = Observable.Merge(
-                    EditData.BPM.Select(_ => true),
-                    EditData.OffsetSamples.Select(_ => true),
-                    EditData.MaxBlock.Select(_ => true),
-                    editPresenter.RequestForEditNote.Select(_ => true),
-                    editPresenter.RequestForAddNote.Select(_ => true),
-                    editPresenter.RequestForRemoveNote.Select(_ => true),
-                    editPresenter.RequestForChangeNoteStatus.Select(_ => true),
-                    Audio.OnLoad.Select(_ => false),
-                    saveActionObservable.Select(_ => false))
-                .SkipUntil(Audio.OnLoad.DelayFrame(1))
-                .Do(unsaved => saveButton.GetComponent<Image>().color = unsaved ? unsavedStateButtonColor : savedStateButtonColor)
-                .ToReactiveProperty();
+            //===============================
+            // 未保存状態の検知
+            //===============================
+            mustBeSaved =
+                Observable.Merge(
+                        EditData.BPM.Select(_ => true),
+                        EditData.OffsetSamples.Select(_ => true),
+                        EditData.MaxBlock.Select(_ => true),
+                        editPresenter.RequestForEditNote.Select(_ => true),
+                        editPresenter.RequestForAddNote.Select(_ => true),
+                        editPresenter.RequestForRemoveNote.Select(_ => true),
+                        editPresenter.RequestForChangeNoteStatus.Select(_ => true),
+                        Audio.OnLoad.Select(_ => false),
+                        saveActionObservable.Select(_ => false))
+                    .SkipUntil(Audio.OnLoad.DelayFrame(1))
+                    .Do(unsaved =>
+                        saveButton.GetComponent<Image>().color =
+                            unsaved ? unsavedStateButtonColor : savedStateButtonColor)
+                    .ToReactiveProperty();
 
-            mustBeSaved.SubscribeToText(messageText, unsaved => unsaved ? "保存が必要な状態" : "");
+            // メッセージ表示
+            mustBeSaved.SubscribeToText(messageText,
+                unsaved => unsaved ? "保存が必要な状態" : "");
 
+            // 保存実行
             saveActionObservable.Subscribe(_ => Save());
 
+            //===============================
+            // ダイアログ：保存して終了
+            //===============================
             dialogSaveButton.AddListener(
                 EventTriggerType.PointerClick,
                 (e) =>
@@ -65,6 +106,9 @@ namespace NoteMaker.Presenter
                     Application.Quit();
                 });
 
+            //===============================
+            // ダイアログ：保存せず終了
+            //===============================
             dialogDoNotSaveButton.AddListener(
                 EventTriggerType.PointerClick,
                 (e) =>
@@ -74,6 +118,9 @@ namespace NoteMaker.Presenter
                     Application.Quit();
                 });
 
+            //===============================
+            // ダイアログ：キャンセル
+            //===============================
             dialogCancelButton.AddListener(
                 EventTriggerType.PointerClick,
                 (e) =>
@@ -81,16 +128,25 @@ namespace NoteMaker.Presenter
                     saveDialog.SetActive(false);
                 });
 
+            //===============================
+            // アプリ終了時のフック
+            //===============================
             Application.wantsToQuit += ApplicationQuit;
         }
 
+        /// <summary>
+        /// アプリ終了時の保存確認。
+        /// </summary>
         bool ApplicationQuit()
         {
+            // 未保存状態で無ければそのまま終了
             if (mustBeSaved.Value)
             {
-                dialogMessageText.text = "Do you want to save the changes you made in the note '"
-                    + EditData.Name.Value + "' ?" + System.Environment.NewLine
-                    + "Your changes will be lost if you don't save them.";
+                dialogMessageText.text =
+                    "ノーツ '" + EditData.Name.Value + "' の変更を保存しますか？"
+                    + System.Environment.NewLine
+                    + "保存しない場合、変更内容は失われます。";
+
                 saveDialog.SetActive(true);
                 return false;
             }
@@ -98,52 +154,56 @@ namespace NoteMaker.Presenter
             return true;
         }
 
+        /// <summary>
+        /// ノーツデータと楽曲ファイルを保存します。
+        /// </summary>
         public void Save()
         {
             var musicName = Path.GetFileNameWithoutExtension(EditData.Name.Value);
             var difficultyName = EditData.DifficultyName.Value;
 
-            // Notes/曲名/のフォルダを作成
-            var notesRoot = Path.Combine(Path.GetDirectoryName(MusicSelector.DirectoryPath.Value), "Notes");
+            //===============================
+            // Notes/曲名 フォルダ作成
+            //===============================
+            var notesRoot =
+                Path.Combine(Path.GetDirectoryName(MusicSelector.DirectoryPath.Value), "Notes");
             var musicFolder = Path.Combine(notesRoot, musicName);
 
-            if(!Directory.Exists(musicFolder))
-            {
+            if (!Directory.Exists(musicFolder))
                 Directory.CreateDirectory(musicFolder);
-            }
 
-            // 譜面ファイルの保存先
+            //===============================
+            // 譜面 JSON 保存
+            //===============================
             var jsonFileName = $"{difficultyName}.json";
             var jsonPath = Path.Combine(musicFolder, jsonFileName);
 
-            // 譜面データを保存
             var json = EditDataSerializer.Serialize();
             File.WriteAllText(jsonPath, json, System.Text.Encoding.UTF8);
 
-            // 曲のファイルをコピー
+            //===============================
+            // 楽曲ファイルのコピー（music.xxx）
+            //===============================
             var sourceMusicPath = Path.Combine(
                 MusicSelector.DirectoryPath.Value,
                 MusicSelector.SelectedFileName.Value);
 
-            if(File.Exists(sourceMusicPath))
+            if (File.Exists(sourceMusicPath))
             {
-                // 元の拡張子を取得
                 var ext = Path.GetExtension(sourceMusicPath);
-                // 保存先は Notes/曲名/曲名.拡張子
                 var destMusicPath = Path.Combine(musicFolder, "music" + ext);
-                // 上書きコピー
                 File.Copy(sourceMusicPath, destMusicPath, true);
             }
 
-            // 曲ファイルのコピー
+            //===============================
+            // 曲ファイルのコピー（フォルダ直下のファイル）
+            //===============================
             var musicFilePath = MusicSelector.DirectoryPath.Value;
-            if(File.Exists(musicFilePath))
+            if (File.Exists(musicFilePath))
             {
                 var musicFileName = Path.GetFileName(musicFilePath);
-                var destMusicpath = Path.Combine(musicFolder, musicFileName);
-
-                // 上書きコピー
-                File.Copy(musicFilePath, destMusicpath, true);
+                var destMusicPath = Path.Combine(musicFolder, musicFileName);
+                File.Copy(musicFilePath, destMusicPath, true);
             }
 
             messageText.text = "保存済み";

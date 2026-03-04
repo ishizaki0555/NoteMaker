@@ -1,4 +1,17 @@
-﻿using NoteMaker.Common;
+﻿// ========================================
+//
+// NoteMaker Project
+//
+// ========================================
+//
+// EditSectionHandlePresenter.cs
+// セクション境界ハンドル（縦ライン）をドラッグして位置（サンプル値）を変更する
+// プレゼンターです。ドラッグ開始 → Canvas 座標 → サンプル値変換 → Clamp →
+// Undo/Redo 対応 → UI 反映、という一連の流れを管理します。
+// 
+//========================================
+
+using NoteMaker.Common;
 using NoteMaker.Model;
 using NoteMaker.Utility;
 using System.Linq;
@@ -10,65 +23,86 @@ using UnityEngine.UI;
 
 namespace NoteMaker.Presenter
 {
+    /// <summary>
+    /// セクション境界ハンドル（縦ライン）の位置を管理するクラスです。
+    /// ・ドラッグ開始位置の取得  
+    /// ・Canvas 座標 → サンプル値への変換  
+    /// ・サンプル値の Clamp  
+    /// ・Undo / Redo 対応  
+    /// ・ライン位置の UI 反映  
+    /// </summary>
     public class EditSectionHandlePresenter : MonoBehaviour
     {
-        [SerializeField] Image handleImage = default;
-        [SerializeField] RectTransform lineRectTransform = default;
+        [SerializeField] Image handleImage = default;                 // ハンドル画像
+        [SerializeField] RectTransform lineRectTransform = default;   // 縦ライン RectTransform
 
-        ReactiveProperty<int> CurrentSamples = new ReactiveProperty<int>(0);
-        ReactiveProperty<float> position_ = new ReactiveProperty<float>();
+        ReactiveProperty<int> CurrentSamples = new ReactiveProperty<int>(0); // 現在のサンプル位置
+        ReactiveProperty<float> position_ = new ReactiveProperty<float>();   // ラインの Y 座標
 
         public ReactiveProperty<float> Position => position_;
 
+        RectTransform handleRectTransform_;
         public RectTransform HandleRectTransform =>
             handleRectTransform_ ?? (handleRectTransform_ = handleImage.GetComponent<RectTransform>());
-        RectTransform handleRectTransform_;
 
         void Start()
         {
             Audio.OnLoad.First().Subscribe(_ => Init());
 
-            // ★ 縦向きなので Y を監視
+            // ラインの Y 座標を監視
             position_ = lineRectTransform
                 .ObserveEveryValueChanged(rect => rect.localPosition.y)
                 .ToReactiveProperty();
         }
 
+        /// <summary>
+        /// ドラッグ操作・Undo/Redo・UI 反映のストリームを構築します。
+        /// </summary>
         void Init()
         {
             var handlerOnMouseDownObservable = new Subject<Vector3>();
 
+            //===============================
+            // ドラッグ開始（PointerDown）
+            //===============================
             handleImage.AddListener(
                 EventTriggerType.PointerDown,
                 (e) =>
                 {
-                    // ★ ドラッグ開始位置（Y）
                     handlerOnMouseDownObservable.OnNext(
                         Vector3.up * ConvertUtils.SamplesToCanvasPositionY(CurrentSamples.Value));
                 });
 
+            //===============================
+            // ドラッグ中のサンプル値更新
+            //===============================
             var operateHandleObservable = this.UpdateAsObservable()
-                .SkipUntil(handlerOnMouseDownObservable)
-                .TakeWhile(_ => !Input.GetMouseButtonUp(0))
+                .SkipUntil(handlerOnMouseDownObservable)          // ドラッグ開始
+                .TakeWhile(_ => !Input.GetMouseButtonUp(0))       // ドラッグ終了まで
                 .RepeatSafe()
                 .Select(_ => ConvertUtils.ScreenToCanvasPosition(Input.mousePosition))
-                // ★ Canvas Y → Samples
-                .Select(canvasPos => ConvertUtils.CanvasPositionYToSamples(canvasPos.y))
-                .Select(samples => Mathf.Clamp(samples, 0, Audio.Source.clip.samples))
+                .Select(canvasPos => ConvertUtils.CanvasPositionYToSamples(canvasPos.y)) // Canvas → Samples
+                .Select(samples => Mathf.Clamp(samples, 0, Audio.Source.clip.samples))   // 範囲制限
                 .DistinctUntilChanged();
 
             operateHandleObservable.Subscribe(samples => CurrentSamples.Value = samples);
 
+            //===============================
+            // Undo / Redo 対応
+            //===============================
             operateHandleObservable
                 .Buffer(this.UpdateAsObservable().Where(_ => Input.GetMouseButtonUp(0)))
-                .Where(b => 2 <= b.Count)
-                .Select(x => new { current = x.Last(), prev = x.First() })
-                .Subscribe(x => EditCommandManager.Do(
-                    new Command(
-                        () => CurrentSamples.Value = x.current,
-                        () => CurrentSamples.Value = x.prev)));
+                .Where(b => b.Count >= 2)
+                .Select(b => new { current = b.Last(), prev = b.First() })
+                .Subscribe(x =>
+                    EditCommandManager.Do(
+                        new Command(
+                            () => CurrentSamples.Value = x.current,
+                            () => CurrentSamples.Value = x.prev)));
 
-            // ★ Y方向の更新に対応
+            //===============================
+            // UI 反映（縦ライン位置更新）
+            //===============================
             Observable.Merge(
                     CurrentSamples.AsUnitObservable(),
                     NoteCanvas.OffsetY.AsUnitObservable(),
@@ -76,10 +110,10 @@ namespace NoteMaker.Presenter
                     NoteCanvas.Height.AsUnitObservable(),
                     EditData.OffsetSamples.AsUnitObservable())
                 .Select(_ => CurrentSamples.Value)
-                .Subscribe(x =>
+                .Subscribe(samples =>
                 {
                     var pos = lineRectTransform.localPosition;
-                    pos.y = ConvertUtils.SamplesToCanvasPositionY(x);
+                    pos.y = ConvertUtils.SamplesToCanvasPositionY(samples);
                     lineRectTransform.localPosition = pos;
                 });
         }

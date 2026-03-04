@@ -1,4 +1,18 @@
-﻿using NoteMaker.GLDrawing;
+﻿// ========================================
+//
+// NoteMaker Project
+//
+// ========================================
+//
+// RangeSelectionPresenter.cs
+// ノーツの範囲選択・コピー・カット・ペースト・削除・選択解除をまとめて扱う
+// プレゼンターです。ドラッグ矩形での選択、Ctrl+A 全選択、Ctrl+C コピー、
+// Ctrl+X カット、Ctrl+V ペースト、Delete 削除など、
+// ノーツ編集の複合操作を一括で管理します。
+//
+//========================================
+
+using NoteMaker.GLDrawing;
 using NoteMaker.Notes;
 using NoteMaker.Model;
 using NoteMaker.Utility;
@@ -11,91 +25,117 @@ using UnityEngine;
 
 namespace NoteMaker.Presenter
 {
+    /// <summary>
+    /// ノーツの範囲選択・コピー・カット・ペースト・削除を管理するクラスです。
+    /// ・ドラッグ矩形での範囲選択  
+    /// ・Ctrl+A 全選択  
+    /// ・Ctrl+C コピー  
+    /// ・Ctrl+X カット  
+    /// ・Ctrl+V ペースト（次の拍へ）  
+    /// ・Delete / Backspace で削除  
+    /// ・選択解除  
+    /// </summary>
     public class RangeSelectionPresenter : MonoBehaviour
     {
-        [SerializeField] Color selectionRectColor = default;
+        [SerializeField] Color selectionRectColor = default; // 選択矩形の色
 
-        Dictionary<NotePosition, NoteObject> selectedNoteObjects = new Dictionary<NotePosition, NoteObject>();
-        List<Note> copiedNotes = new List<Note>();
+        Dictionary<NotePosition, NoteObject> selectedNoteObjects = new Dictionary<NotePosition, NoteObject>(); // 選択中ノーツ
+        List<Note> copiedNotes = new List<Note>(); // コピーされたノーツ
         EditNotesPresenter editPresenter;
 
         void Awake()
         {
             editPresenter = EditNotesPresenter.Instance;
 
-
-            // Select by dragging
+            //===============================
+            // ドラッグによる範囲選択
+            //===============================
             this.UpdateAsObservable()
                 .Where(_ => KeyInput.CtrlKey())
                 .Where(_ => Input.GetMouseButtonDown(0))
                 .Select(_ => Input.mousePosition)
-                .SelectMany(startPos => this.UpdateAsObservable()
-                    .TakeWhile(_ => !Input.GetMouseButtonUp(0))
-                    .Where(_ => NoteCanvas.IsMouseOverNotesRegion.Value)
-                    .Select(_ => Input.mousePosition)
-                    .Select(currentPos => new Rect(startPos, currentPos - startPos)))
+                .SelectMany(startPos =>
+                    this.UpdateAsObservable()
+                        .TakeWhile(_ => !Input.GetMouseButtonUp(0))
+                        .Where(_ => NoteCanvas.IsMouseOverNotesRegion.Value)
+                        .Select(_ => Input.mousePosition)
+                        .Select(currentPos => new Rect(startPos, currentPos - startPos)))
                 .Do(rect => GLLineDrawer.Draw(ToLines(rect, selectionRectColor)))
                 .Do(_ => { if (!Audio.IsPlaying.Value) Deselect(); })
                 .SelectMany(rect => GetNotesWithin(rect))
                 .Do(kv => selectedNoteObjects[kv.Key] = kv.Value)
                 .Subscribe(kv => kv.Value.isSelected.Value = true);
 
-
-            // All select by Ctrl-A
+            //===============================
+            // Ctrl+A 全選択
+            //===============================
             this.UpdateAsObservable()
                 .Where(_ => KeyInput.CtrlPlus(KeyCode.A))
                 .SelectMany(_ => EditData.Notes.Values.ToList())
-                .Do(noteObj => noteObj.isSelected.Value = true)
-                .Subscribe(noteObj => selectedNoteObjects[noteObj.note.position] = noteObj);
+                .Do(obj => obj.isSelected.Value = true)
+                .Subscribe(obj => selectedNoteObjects[obj.note.position] = obj);
 
-
-            // Copy notes by Ctrl-C
+            //===============================
+            // Ctrl+C コピー
+            //===============================
             this.UpdateAsObservable()
                 .Where(_ => KeyInput.CtrlPlus(KeyCode.C))
-                .Subscribe(notes => CopyNotes(selectedNoteObjects.Values));
+                .Subscribe(_ => CopyNotes(selectedNoteObjects.Values));
 
-
-            // Cutting notes by Ctrl-X
+            //===============================
+            // Ctrl+X カット（コピー → 削除）
+            //===============================
             this.UpdateAsObservable()
                 .Where(_ => KeyInput.CtrlPlus(KeyCode.X))
                 .Select(_ => selectedNoteObjects.Values
-                    .Where(noteObj => EditData.Notes.ContainsKey(noteObj.note.position)))
+                    .Where(obj => EditData.Notes.ContainsKey(obj.note.position)))
                 .Do(notes => CopyNotes(notes))
                 .Subscribe(notes => DeleteNotes(notes));
 
-
-            // Deselect by mousedown
+            //===============================
+            // 左クリックで選択解除（Waveform 以外）
+            //===============================
             this.UpdateAsObservable()
                 .Where(_ => !NoteCanvas.IsMouseOverWaveformRegion.Value)
                 .Where(_ => Input.GetMouseButtonDown(0))
                 .Subscribe(_ => Deselect());
 
-
-            // Delete selected notes by delete key
+            //===============================
+            // Delete / Backspace で削除
+            //===============================
             this.UpdateAsObservable()
                 .Where(_ => Input.GetKeyDown(KeyCode.Delete) || Input.GetKeyDown(KeyCode.Backspace))
                 .Select(_ => selectedNoteObjects.Values
-                    .Where(noteObj => EditData.Notes.ContainsKey(noteObj.note.position)).ToList())
+                    .Where(obj => EditData.Notes.ContainsKey(obj.note.position)).ToList())
                 .Do(_ => selectedNoteObjects.Clear())
                 .Subscribe(notes => DeleteNotes(notes));
 
-
-            // Paste to next beat by Ctrl-V
+            //===============================
+            // Ctrl+V ペースト（次の拍へ）
+            //===============================
             this.UpdateAsObservable()
                 .Where(_ => KeyInput.CtrlPlus(KeyCode.V))
                 .Where(_ => copiedNotes.Count > 0)
-                .Select(_ => copiedNotes.OrderBy(note => note.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value)))
+                .Select(_ => copiedNotes.OrderBy(n => n.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value)))
                 .Subscribe(sortedCopiedNotes =>
                 {
-                    var firstPos = sortedCopiedNotes.First().position;
-                    var lastPos = sortedCopiedNotes.Last().position;
-                    var beatDiff = 1 + lastPos.num / lastPos.LPB - firstPos.num / firstPos.LPB;
+                    var first = sortedCopiedNotes.First().position;
+                    var last = sortedCopiedNotes.Last().position;
 
-                    var validNotes = copiedNotes.Where(note => note.position.Add(0, note.position.LPB * beatDiff, 0).ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value) < Audio.Source.clip.samples)
+                    // 次の拍へ移動するための差分
+                    var beatDiff = 1 + last.num / last.LPB - first.num / first.LPB;
+
+                    // 曲の長さを超えないノーツだけペースト対象にする
+                    var validNotes = copiedNotes
+                        .Where(note =>
+                            note.position.Add(0, note.position.LPB * beatDiff, 0)
+                                .ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value)
+                            < Audio.Source.clip.samples)
                         .ToList();
 
                     copiedNotes.Clear();
 
+                    // ノーツを複製してペースト
                     validNotes.ToObservable()
                         .Select(note =>
                             note.type == NoteTypes.Single
@@ -104,8 +144,7 @@ namespace NoteMaker.Presenter
                                     note.position.Add(0, note.position.LPB * beatDiff, 0),
                                     note.type,
                                     note.next.Add(0, note.next.LPB * beatDiff, 0),
-                                    note.prev.Add(0, note.prev.LPB * beatDiff, 0)
-                                ))
+                                    note.prev.Add(0, note.prev.LPB * beatDiff, 0)))
                         .Do(note => copiedNotes.Add(note))
                         .Subscribe(note =>
                             (EditData.Notes.ContainsKey(note.position)
@@ -115,15 +154,19 @@ namespace NoteMaker.Presenter
 
                     Deselect();
 
-                    validNotes.Select(obj => obj.position.Add(0, obj.position.LPB * beatDiff, 0))
+                    // ペーストされたノーツを選択状態にする
+                    validNotes.Select(n => n.position.Add(0, n.position.LPB * beatDiff, 0))
                         .ToObservable()
                         .DelayFrame(1)
-                        .Select(pastedPosition => EditData.Notes[pastedPosition])
-                        .Do(pastedObj => selectedNoteObjects[pastedObj.note.position] = pastedObj)
-                        .Subscribe(pastedObj => pastedObj.isSelected.Value = true);
+                        .Select(pos => EditData.Notes[pos])
+                        .Do(obj => selectedNoteObjects[obj.note.position] = obj)
+                        .Subscribe(obj => obj.isSelected.Value = true);
                 });
         }
 
+        /// <summary>
+        /// ロングノーツの next/prev を辿りながら、選択されている次のノーツを探す。
+        /// </summary>
         public NotePosition GetSelectedNextLongNote(NotePosition current, Func<NoteObject, NotePosition> accessor)
         {
             while (EditData.Notes.ContainsKey(current))
@@ -137,46 +180,68 @@ namespace NoteMaker.Presenter
             return NotePosition.None;
         }
 
+        /// <summary>
+        /// 範囲内にあるノーツを取得。
+        /// </summary>
         Dictionary<NotePosition, NoteObject> GetNotesWithin(Rect rect)
         {
             return EditData.Notes
-                .Where(kv => rect.Contains(ConvertUtils.CanvasToScreenPosition(ConvertUtils.NoteToCanvasPosition(kv.Value.note.position)), true))
+                .Where(kv =>
+                    rect.Contains(
+                        ConvertUtils.CanvasToScreenPosition(
+                            ConvertUtils.NoteToCanvasPosition(kv.Value.note.position)), true))
                 .ToDictionary(kv => kv.Key, kv => kv.Value);
         }
 
+        /// <summary>
+        /// ノーツをコピー。
+        /// ロングノーツの場合は next/prev も選択範囲内で繋ぎ直す。
+        /// </summary>
         void CopyNotes(IEnumerable<NoteObject> notes)
         {
-            copiedNotes = notes.Select(noteObj =>
+            copiedNotes = notes.Select(obj =>
             {
-                var note = noteObj.note;
-                if (noteObj.note.type == NoteTypes.Long)
+                var note = obj.note;
+
+                if (note.type == NoteTypes.Long)
                 {
-                    note.next = GetSelectedNextLongNote(noteObj.note.next, c => c.note.next);
-                    note.prev = GetSelectedNextLongNote(noteObj.note.prev, c => c.note.prev);
+                    note.next = GetSelectedNextLongNote(note.next, c => c.note.next);
+                    note.prev = GetSelectedNextLongNote(note.prev, c => c.note.prev);
                 }
+
                 return note;
-            })
-            .ToList();
+            }).ToList();
         }
 
+        /// <summary>
+        /// ノーツ削除。
+        /// </summary>
         void DeleteNotes(IEnumerable<NoteObject> notes)
         {
-            notes.ToList().ForEach(note => editPresenter.RequestForRemoveNote.OnNext(note.note));
+            notes.ToList().ForEach(obj =>
+                editPresenter.RequestForRemoveNote.OnNext(obj.note));
         }
 
+        /// <summary>
+        /// 選択解除。
+        /// </summary>
         void Deselect()
         {
             selectedNoteObjects.Values
-                .Where(noteObj => EditData.Notes.ContainsKey(noteObj.note.position))
+                .Where(obj => EditData.Notes.ContainsKey(obj.note.position))
                 .ToList()
-                .ForEach(note => note.isSelected.Value = false);
+                .ForEach(obj => obj.isSelected.Value = false);
 
             selectedNoteObjects.Clear();
         }
 
+        /// <summary>
+        /// Rect → 4 辺の Line 配列へ変換。
+        /// </summary>
         Line[] ToLines(Rect rect, Color color)
         {
-            return new[] {
+            return new[]
+            {
                 new Line(rect.min, rect.min + Vector2.right * rect.size.x, color),
                 new Line(rect.min, rect.min + Vector2.up    * rect.size.y, color),
                 new Line(rect.max, rect.max + Vector2.left  * rect.size.x, color),
