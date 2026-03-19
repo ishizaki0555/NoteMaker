@@ -16,6 +16,7 @@
 using NoteMaker.Model;
 using System.IO;
 using UniRx;
+using SFB;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -29,10 +30,11 @@ namespace NoteMaker.Presenter
     /// </summary>
     public class SettingWorkSpacePathPresenter : MonoBehaviour
     {
-        [SerializeField] InputField workSpacePathInputField = default;     // 入力欄
-        [SerializeField] Text workSpacePathInputFieldText = default;       // 入力欄のテキスト
-        [SerializeField] Color defaultTextColor = default;                 // 有効パス時の色
-        [SerializeField] Color invalidStateTextColor = default;            // 無効パス時の色
+        [SerializeField] InputField workSpacePathInputField = default;      // 入力欄
+        [SerializeField] Button browseButton = default;                     // 保存フォルダ設定ボタン
+        [SerializeField] Text workSpacePathInputFieldText = default;        // 入力欄のテキスト
+        [SerializeField] Color defaultTextColor = default;                  // 有効パス時の色
+        [SerializeField] Color invalidStateTextColor = default;             // 無効パス時の色
 
         void Awake()
         {
@@ -62,6 +64,41 @@ namespace NoteMaker.Presenter
                 .DistinctUntilChanged()
                 .Subscribe(path =>
                     workSpacePathInputField.text = path);
+
+            //===============================
+            // クリック購読の追加
+            //===============================
+            browseButton
+                .OnClickAsObservable()
+                .Subscribe(_ => OpenFolderDialog())
+                .AddTo(this);
+        }
+
+        void OpenFolderDialog()
+        {
+            var paths = StandaloneFileBrowser.OpenFolderPanel("ワークスペースフォルダを選択", "", false);
+
+            if(paths.Length > 0 && !string.IsNullOrEmpty(paths[0]))
+            {
+                string selectedPath = paths[0];
+
+                // WorkSpacePathを更新
+                Settings.WorkSpacePath.Value = selectedPath;
+                workSpacePathInputField.text = selectedPath;
+
+                // Musicsフォルダを作成
+                var musicPath = Path.Combine(selectedPath, "Musics");
+                if (!Directory.Exists(musicPath))
+                    Directory.CreateDirectory(musicPath);
+
+                // Notesフォルダを作成
+                var notesPath = Path.Combine(selectedPath, "Notes");
+                if (!Directory.Exists(notesPath))
+                    Directory.CreateDirectory(notesPath);
+
+                // DirectoryPathを更新
+                MusicSelector.DirectoryPath.Value = musicPath;
+            }
         }
     }
 }
