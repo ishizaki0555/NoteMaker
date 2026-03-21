@@ -1,4 +1,4 @@
-﻿// ========================================
+// ========================================
 // 
 // NoteMaker Project
 // 
@@ -33,6 +33,7 @@ namespace NoteMaker.Model
         ReactiveProperty<float> offsetY_ = new ReactiveProperty<float>();                // キャンバスの縦方向オフセット
         ReactiveProperty<float> scaleFactor_ = new ReactiveProperty<float>();            // キャンバスのスケール倍率
         ReactiveProperty<bool> isMouseOverNotesRegion_ = new ReactiveProperty<bool>();   // マウスがノーツ領域にいるか
+        ReactiveProperty<bool> isMouseOverBpmLine_ = new ReactiveProperty<bool>();       // マウスがBPM調整ラインにいるか
         ReactiveProperty<bool> isMouseOverWaveformRegion_ = new ReactiveProperty<bool>(); // マウスが波形領域にいるか
         ReactiveProperty<NotePosition> closestNotePosition_ = new ReactiveProperty<NotePosition>(); // 最も近いノート位置
 
@@ -50,6 +51,9 @@ namespace NoteMaker.Model
 
         /// <summary>マウスがノーツ領域にいるかどうか。</summary>
         public static ReactiveProperty<bool> IsMouseOverNotesRegion => Instance.isMouseOverNotesRegion_;
+
+        /// <summary>マウスがBPM調整ラインにいるかどうか。</summary>
+        public static ReactiveProperty<bool> IsMouseOverBpmLine => Instance.isMouseOverBpmLine_;
 
         /// <summary>マウスが波形領域にいるかどうか。</summary>
         public static ReactiveProperty<bool> IsMouseOverWaveformRegion => Instance.isMouseOverWaveformRegion_;

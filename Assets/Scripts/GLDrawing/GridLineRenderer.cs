@@ -61,9 +61,19 @@ namespace NoteMaker.GLDrawing
             var beatSamples = new int[1];   // 各拍のサンプル位置
             var beatLines = new Line[1];    // 横線（拍線）
             var blockLines = new Line[1];   // 縦線（ブロック線）
+            Line bpmLine = default;         // BPM調整用縦線
+            bool isBpmLineInitialized = false;
 
             float cachedZeroSamplePosY = -1f; // 前フレームの基準位置
             float cachedCanvasHeight = 0f;    // 前フレームのキャンバス高さ
+            bool isGridDirty = true;          // BPM等の変更検知フラグ
+
+            // BPMやBpmChangesなどの変更を検知してグリッドを確実に再計算する
+            EditData.BPM.Subscribe(_ => isGridDirty = true).AddTo(this);
+            EditData.BpmChanges.ObserveAdd().Subscribe(_ => isGridDirty = true).AddTo(this);
+            EditData.BpmChanges.ObserveRemove().Subscribe(_ => isGridDirty = true).AddTo(this);
+            EditData.BpmChanges.ObserveReplace().Subscribe(_ => isGridDirty = true).AddTo(this);
+            EditData.BpmChanges.ObserveReset().Subscribe(_ => isGridDirty = true).AddTo(this);
 
             this.LateUpdateAsObservable()
                 .Where(_ => Audio.Source != null && Audio.Source.clip != null)
@@ -77,8 +87,10 @@ namespace NoteMaker.GLDrawing
                     // BeatLine（横線）生成
                     // ============================
                     // UIサイズ変更やLPB変更、BPM変更などを検知して再生成
-                    if (beatSamples.Length != beatNum || cachedCanvasHeight != NoteCanvas.Height.Value)
+                    if (isGridDirty || beatSamples.Length != beatNum || cachedCanvasHeight != NoteCanvas.Height.Value)
                     {
+                        isGridDirty = false;
+                        
                         // 各拍のサンプル位置を計算
                         beatSamples = Enumerable.Range(0, beatNum)
                             .Select(i => BPMUtility.CalculateSamples(Audio.Source.clip.frequency, EditData.BPM.Value, EditData.LPB.Value, i, EditData.BpmChanges))
@@ -141,43 +153,78 @@ namespace NoteMaker.GLDrawing
                             blockLines[i].color = blockLineColor;
                     }
 
+                    // BPM調整用縦線の生成・更新
+                    var bpmCanvasX = ConvertUtils.BlockNumToCanvasPositionX(EditData.MaxBlock.Value) * blockSpacingFactor + horizontalOffset - 60f;
+                    var bpmScreenX = ConvertUtils.CanvasToScreenPosition(new Vector3(bpmCanvasX, 0, 0)).x;
+                    if (!isBpmLineInitialized)
+                    {
+                        bpmLine = new Line(
+                            new Vector3(bpmScreenX, 0, 0),
+                            new Vector3(bpmScreenX, Screen.height, 0),
+                            blockLineColor);
+                        isBpmLineInitialized = true;
+                    }
+                    else
+                    {
+                        bpmLine.start.x = bpmScreenX;
+                        bpmLine.end.x = bpmScreenX;
+                        bpmLine.start.y = 0;
+                        bpmLine.end.y = Screen.height;
+                        bpmLine.color = blockLineColor;
+                    }
+
+                    // デフォルト初期化
+                    NoteCanvas.IsMouseOverBpmLine.Value = false;
+
                     // ============================
                     // ハイライト判定
                     // ============================
                     if (NoteCanvas.IsMouseOverNotesRegion.Value)
                     {
-                        // マウス位置に最も近い拍線と縦線を見つける
-                        var mouseY = Input.mousePosition.y;
-                        var closestBeatIndex = GetClosestLineIndex(beatLines, c => Mathf.Abs(c.start.y - mouseY));
-
-                        // 縦線はマウスのX位置に基づいて最も近いものを選択
                         var mouseX = Input.mousePosition.x;
-                        var closestBlockIndex = GetClosestLineIndex(blockLines, c => Mathf.Abs(c.start.x - mouseX));
+                        var mouseY = Input.mousePosition.y;
 
-                        // マウス位置に最も近い拍線と縦線の距離を計算
-                        var distance = new Vector2(blockLines[closestBlockIndex].start.x, beatLines[closestBeatIndex].start.y)
-                                     - new Vector2(mouseX, mouseY);
+                        var thresholdX = Mathf.Abs(ConvertUtils.BlockNumToCanvasPositionX(0) - ConvertUtils.BlockNumToCanvasPositionX(1)) / 2f;
+                        var thresholdY = Mathf.Abs(ConvertUtils.SamplesToCanvasPositionY(beatSamples[0]) - ConvertUtils.SamplesToCanvasPositionY(beatSamples[1])) / 2f;
 
-                        // 距離の閾値を拍線と縦線の間隔に基づいて設定
-                        var thresholdY = Mathf.Abs(ConvertUtils.SamplesToCanvasPositionY(beatSamples[0]) -
-                                                   ConvertUtils.SamplesToCanvasPositionY(beatSamples[1])) / 2f;
-
-                        // 縦線の間隔に基づいて閾値を設定
-                        var thresholdX = Mathf.Abs(ConvertUtils.BlockNumToCanvasPositionX(0) -
-                                                   ConvertUtils.BlockNumToCanvasPositionX(1)) / 2f;
-
-                        // マウスが近いラインをハイライト
-                        if (distance.x < thresholdX && distance.y < thresholdY)
+                        // BPM調整ラインに近いかチェック
+                        if (Mathf.Abs(bpmScreenX - mouseX) < thresholdX)
                         {
-                            blockLines[closestBlockIndex].color = highlightColor;
-                            beatLines[closestBeatIndex].color = highlightColor;
+                            NoteCanvas.IsMouseOverBpmLine.Value = true;
+                            bpmLine.color = Color.cyan; // 青色（Cyanが見やすいため）に変更
 
-                            NoteCanvas.ClosestNotePosition.Value =
-                                new NotePosition(EditData.LPB.Value, closestBeatIndex, closestBlockIndex);
+                            var closestBeatIndex = GetClosestLineIndex(beatLines, c => Mathf.Abs(c.start.y - mouseY));
+                            if (Mathf.Abs(beatLines[closestBeatIndex].start.y - mouseY) < thresholdY)
+                            {
+                                beatLines[closestBeatIndex].color = highlightColor;
+                                NoteCanvas.ClosestNotePosition.Value = new NotePosition(EditData.LPB.Value, closestBeatIndex, 0);
+                            }
+                            else
+                            {
+                                NoteCanvas.ClosestNotePosition.Value = NotePosition.None;
+                            }
                         }
                         else
                         {
-                            NoteCanvas.ClosestNotePosition.Value = NotePosition.None;
+                            // 既存のノーツラインのハイライト処理
+                            var closestBeatIndex = GetClosestLineIndex(beatLines, c => Mathf.Abs(c.start.y - mouseY));
+                            var closestBlockIndex = GetClosestLineIndex(blockLines, c => Mathf.Abs(c.start.x - mouseX));
+
+                            var distance = new Vector2(blockLines[closestBlockIndex].start.x, beatLines[closestBeatIndex].start.y)
+                                         - new Vector2(mouseX, mouseY);
+
+                            if (Mathf.Abs(distance.x) < thresholdX && Mathf.Abs(distance.y) < thresholdY)
+                            {
+                                blockLines[closestBlockIndex].color = highlightColor;
+                                beatLines[closestBeatIndex].color = highlightColor;
+
+                                NoteCanvas.ClosestNotePosition.Value =
+                                    new NotePosition(EditData.LPB.Value, closestBeatIndex, closestBlockIndex);
+                            }
+                            else
+                            {
+                                NoteCanvas.ClosestNotePosition.Value = NotePosition.None;
+                            }
                         }
                     }
 
@@ -221,20 +268,23 @@ namespace NoteMaker.GLDrawing
                     {
                         int samples = BPMUtility.CalculateSamples(Audio.Source.clip.frequency, EditData.BPM.Value, EditData.LPB.Value, b.tick, EditData.BpmChanges);
                         float y = ConvertUtils.SamplesToCanvasPositionY(samples);
+                        float screenY = ConvertUtils.CanvasToScreenPosition(new Vector3(0, y, 0)).y;
                         
-                        if (y > 0 && y < screenHeight)
+                        // 画面内に収まっているか判定
+                        if (screenY > 0 && screenY < screenHeight)
                         {
                             var line = new Line(
-                                ConvertUtils.CanvasToScreenPosition(new Vector3(1000, y, 0)),
-                                ConvertUtils.CanvasToScreenPosition(new Vector3(-1000, y, 0)),
+                                new Vector3(Screen.width, screenY, 0),
+                                new Vector3(0, screenY, 0),
                                 Color.red
                             );
                             GLLineDrawer.Draw(line);
 
+                            // BPMの数字を新しく作成したBPMラインの少し右に配置する
                             BeatNumberRenderer.Render(
                                 new Vector3(
-                                    Screen.width / 2f + 160 / NoteCanvas.ScaleFactor.Value - 100, // BPM表示位置を少し右にずらす
-                                    y,
+                                    bpmScreenX + 30f, // 新しいBPMラインの少し右
+                                    screenY,          // スクロール対応のスクリーンY座標
                                     0),
                                 Mathf.RoundToInt(b.bpm));
                         }
@@ -244,6 +294,7 @@ namespace NoteMaker.GLDrawing
                     BeatNumberRenderer.End();
 
                     GLLineDrawer.Draw(blockLines);
+                    GLLineDrawer.Draw(bpmLine);
                 });
         }
 

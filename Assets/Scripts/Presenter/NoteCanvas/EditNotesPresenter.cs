@@ -35,6 +35,7 @@ namespace NoteMaker.Presenter
     public class EditNotesPresenter : SingletonMonoBehaviour<EditNotesPresenter>
     {
         [SerializeField] CanvasEvents canvasEvents = default;
+        [SerializeField] BpmInputPresenter bpmInputPresenter = default; // ユーザーが追加したBPM変更用UIの管理スクリプト
 
         public readonly Subject<Note> RequestForEditNote = new Subject<Note>();          // 単ノート/ロングノーツ編集要求
         public readonly Subject<Note> RequestForRemoveNote = new Subject<Note>();        // ノーツ削除要求
@@ -61,14 +62,14 @@ namespace NoteMaker.Presenter
                 canvasEvents.NotesRegionOnMouseDownObservable
                     .Where(_ => !KeyInput.CtrlKey())               // Ctrl 中は別操作
                     .Where(_ => !Input.GetMouseButtonDown(1))      // 右クリックは除外
-                    .Where(_ => !Input.GetKey(KeyCode.B))          // Bキー押下時はBPM変更操作
+                    .Where(_ => !NoteCanvas.IsMouseOverBpmLine.Value) // BPM調整ライン上のクリックは除外
                     .Where(_ => 0 <= NoteCanvas.ClosestNotePosition.Value.num);
 
             var bpmChangeMouseDownObservable =
                 canvasEvents.NotesRegionOnMouseDownObservable
                     .Where(_ => !KeyInput.CtrlKey())
                     .Where(_ => !Input.GetMouseButtonDown(1))
-                    .Where(_ => Input.GetKey(KeyCode.B))           // Bキー押下時
+                    .Where(_ => NoteCanvas.IsMouseOverBpmLine.Value)   // BPM調整ライン上
                     .Where(_ => 0 <= NoteCanvas.ClosestNotePosition.Value.num);
 
             //===============================
@@ -173,14 +174,12 @@ namespace NoteMaker.Presenter
             bpmChangeMouseDownObservable.Subscribe(_ =>
             {
                 var tick = NoteCanvas.ClosestNotePosition.Value.num;
-                var existing = EditData.BpmChanges.FirstOrDefault(b => b.tick == tick);
-                if (existing != null)
+                Debug.Log($"BPM調整ラインがクリックされました: tick={tick}");
+                
+                // BPM入力用ダイアログを表示
+                if (bpmInputPresenter != null)
                 {
-                    RequestForRemoveBpmChange.OnNext(existing);
-                }
-                else
-                {
-                    RequestForAddBpmChange.OnNext(new BpmChange(tick, EditData.BPM.Value));
+                    bpmInputPresenter.Show(tick);
                 }
             });
 
