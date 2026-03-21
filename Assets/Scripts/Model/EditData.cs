@@ -6,7 +6,7 @@
 // 
 // EditData.cs
 // 楽曲編集に必要なメタ情報（曲名・レーン数・LPB・BPM・オフセット・難易度名）と
-// ノート配置データを保持する中心的なデータモデルです。
+// ノーツ配置データを保持する中心的なデータモデルです。
 // ReactiveProperty により UI や描画処理が自動的に更新される仕組みを提供します。
 // 
 //========================================
@@ -18,10 +18,23 @@ using UniRx;
 
 namespace NoteMaker.Model
 {
+    public class BpmCahnge
+    {
+        public int beatIndex;
+        public float bpm;
+        public BpmCahnge() { }
+
+        public BpmCahnge(int beatIndex, float bpm)
+        {
+            this.beatIndex = beatIndex;
+            this.bpm = bpm;
+        }
+    }
+
     /// <summary>
-    /// 楽曲編集に必要な設定値とノートデータを保持するクラスです。
+    /// 楽曲編集に必要な設定値とノーツデータを保持するクラスです。
     /// 曲名、最大レーン数、LPB、BPM、オフセット、難易度名などの基本情報と、
-    /// ノート配置データ（NotePosition → NoteObject）を管理します。
+    /// ノーツ配置データ（NotePosition → NoteObject）を管理します。
     /// 
     /// ReactiveProperty を用いているため、値が変更されると
     /// UI や描画処理が自動的に更新される仕組みになっています。
@@ -32,10 +45,11 @@ namespace NoteMaker.Model
         ReactiveProperty<int> maxBlock_ = new ReactiveProperty<int>(5);                     // 使用レーン数
         ReactiveProperty<int> LPB_ = new ReactiveProperty<int>(4);                          // 1 小節あたりの分割数
         ReactiveProperty<int> BPM_ = new ReactiveProperty<int>(120);                        // 楽曲 BPM
-        ReactiveProperty<int> offsetSamples_ = new ReactiveProperty<int>(0);                // ノート開始位置のオフセット（サンプル単位）
+        ReactiveProperty<int> offsetSamples_ = new ReactiveProperty<int>(0);                // ノーツ開始位置のオフセット（サンプル単位）
         ReactiveProperty<string> difficultyName_ = new ReactiveProperty<string>("Easy");    // 難易度名
+        ReactiveCollection<BpmCahnge> bpmChanges_ = new ReactiveCollection<BpmCahnge>();    
 
-        Dictionary<NotePosition, NoteObject> notes_ = new Dictionary<NotePosition, NoteObject>(); // ノート配置データ
+        Dictionary<NotePosition, NoteObject> notes_ = new Dictionary<NotePosition, NoteObject>(); // ノーツ配置データ
 
         /// <summary>
         /// 楽曲名を ReactiveProperty として公開します。
@@ -58,7 +72,7 @@ namespace NoteMaker.Model
         public static ReactiveProperty<int> BPM => Instance.BPM_;
 
         /// <summary>
-        /// ノート開始位置のオフセット（サンプル単位）を ReactiveProperty として公開します。
+        /// ノーツ開始位置のオフセット（サンプル単位）を ReactiveProperty として公開します。
         /// </summary>
         public static ReactiveProperty<int> OffsetSamples => Instance.offsetSamples_;
 
@@ -68,9 +82,12 @@ namespace NoteMaker.Model
         public static ReactiveProperty<string> DifficultyName => Instance.difficultyName_;
 
         /// <summary>
-        /// ノート配置データ（NotePosition → NoteObject）を公開します。
-        /// ノートの追加・削除・更新はこの辞書を通して行われます。
+        /// ノーツ配置データ（NotePosition → NoteObject）を公開します。
+        /// ノーツの追加・削除・更新はこの辞書を通して行われます。
         /// </summary>
         public static Dictionary<NotePosition, NoteObject> Notes => Instance.notes_;
+
+        /// <summary>どこでソフランを実行するかのデータ</summary>
+        public static ReactiveCollection<BpmCahnge> BpmCahnges => Instance.bpmChanges_;
     }
 }

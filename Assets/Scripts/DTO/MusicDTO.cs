@@ -46,5 +46,12 @@ namespace NoteMaker.DTO
             public int type;             // ノーツ種別（タップ・ロングなど）
             public List<Note> notes;     // ロングノーツなどの子ノーツ
         }
+
+        [System.Serializable]
+        public class BpmChangeDTO
+        {
+            public int beatindex;       // 何拍目でBPMが変わるか
+            public float bpm;           // 追加のBPM
+        }
     }
 }

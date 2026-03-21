@@ -13,6 +13,7 @@
 
 using NoteMaker.Notes;
 using NoteMaker.Utility;
+using NoteMaker.DTO;
 using UniRx;
 using UnityEngine;
 
