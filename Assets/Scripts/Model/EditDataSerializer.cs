@@ -1,4 +1,4 @@
-﻿// ========================================
+// ========================================
 // 
 // NoteMaker Project
 // 
@@ -39,11 +39,17 @@ namespace NoteMaker.Model
             dto.maxBlock = EditData.MaxBlock.Value;
             dto.offset = EditData.OffsetSamples.Value;
             dto.name = Path.GetFileNameWithoutExtension(EditData.Name.Value);
+            
+            dto.bpmChanges = new List<MusicDTO.BpmChangeDTO>();
+            foreach (var b in EditData.BpmChanges)
+            {
+                dto.bpmChanges.Add(new MusicDTO.BpmChangeDTO { tick = b.tick, bpm = b.bpm });
+            }
 
             // Long ノーツの子ノーツは prev を持つものを除外して並び替え
             var sortedNoteObjects = EditData.Notes.Values
                 .Where(note => !(note.note.type == NoteTypes.Long && EditData.Notes.ContainsKey(note.note.prev)))
-                .OrderBy(note => note.note.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value));
+                .OrderBy(note => note.note.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value, EditData.BpmChanges));
 
             dto.notes = new List<MusicDTO.Note>();
 
@@ -87,6 +93,15 @@ namespace NoteMaker.Model
             EditData.BPM.Value = editData.BPM;
             EditData.MaxBlock.Value = editData.maxBlock;
             EditData.OffsetSamples.Value = editData.offset;
+
+            EditData.BpmChanges.Clear();
+            if (editData.bpmChanges != null)
+            {
+                foreach (var b in editData.bpmChanges)
+                {
+                    EditData.BpmChanges.Add(new BpmChange(b.tick, b.bpm));
+                }
+            }
 
             // ノート復元
             foreach (var note in editData.notes)

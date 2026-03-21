@@ -1,4 +1,4 @@
-﻿// ========================================
+// ========================================
 // 
 // NoteMaker Project
 // 
@@ -42,9 +42,9 @@ namespace NoteMaker.Notes
         /// この位置をサンプル位置に変換します。
         /// BPM と LPB に基づいて、拍位置 → サンプル数へ変換します。
         /// </summary>
-        public int ToSamples(int frequency, int BPM)
+        public int ToSamples(int frequency, int BPM, System.Collections.Generic.IEnumerable<NoteMaker.Model.BpmChange> changes = null)
         {
-            return Mathf.FloorToInt(num * (frequency * 60f / BPM / LPB));
+            return NoteMaker.Utility.BPMUtility.CalculateSamples(frequency, BPM, LPB, num, changes);
         }
 
         /// <summary>

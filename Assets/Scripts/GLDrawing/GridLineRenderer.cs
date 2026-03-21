@@ -1,4 +1,4 @@
-﻿// ========================================
+// ========================================
 // 
 // NoteMaker Project
 // 
@@ -69,20 +69,19 @@ namespace NoteMaker.GLDrawing
                 .Where(_ => Audio.Source != null && Audio.Source.clip != null)
                 .Subscribe(_ =>
                 {
-                    // 1 拍あたりのサンプル数を計算
-                    var unitBeatSamples = Mathf.FloorToInt(Audio.Source.clip.frequency * 60f / EditData.BPM.Value);
-
-                    // 総拍数を算出
-                    var beatNum = EditData.LPB.Value * Mathf.CeilToInt(Audio.Source.clip.samples / (float)unitBeatSamples);
+                    // 最新のBPM変更状況を考慮して総ての拍線を計算
+                    var maxSamples = Audio.Source.clip.samples;
+                    var beatNum = BPMUtility.CalculateTick(Audio.Source.clip.frequency, EditData.BPM.Value, EditData.LPB.Value, maxSamples, EditData.BpmChanges) + EditData.LPB.Value * 4;
 
                     // ============================
                     // BeatLine（横線）生成
                     // ============================
+                    // UIサイズ変更やLPB変更、BPM変更などを検知して再生成
                     if (beatSamples.Length != beatNum || cachedCanvasHeight != NoteCanvas.Height.Value)
                     {
                         // 各拍のサンプル位置を計算
                         beatSamples = Enumerable.Range(0, beatNum)
-                            .Select(i => i * unitBeatSamples / EditData.LPB.Value)
+                            .Select(i => BPMUtility.CalculateSamples(Audio.Source.clip.frequency, EditData.BPM.Value, EditData.LPB.Value, i, EditData.BpmChanges))
                             .ToArray();
 
                         // サンプル位置を Y 座標に変換し、Line を生成
@@ -214,6 +213,30 @@ namespace NoteMaker.GLDrawing
                                         0),
                                     i / (EditData.LPB.Value * 4));
                             }
+                        }
+                    }
+
+                    // BPM変更ラインの描画 (BeatNumberRenderer.End よりも前に行う)
+                    foreach (var b in EditData.BpmChanges)
+                    {
+                        int samples = BPMUtility.CalculateSamples(Audio.Source.clip.frequency, EditData.BPM.Value, EditData.LPB.Value, b.tick, EditData.BpmChanges);
+                        float y = ConvertUtils.SamplesToCanvasPositionY(samples);
+                        
+                        if (y > 0 && y < screenHeight)
+                        {
+                            var line = new Line(
+                                ConvertUtils.CanvasToScreenPosition(new Vector3(1000, y, 0)),
+                                ConvertUtils.CanvasToScreenPosition(new Vector3(-1000, y, 0)),
+                                Color.red
+                            );
+                            GLLineDrawer.Draw(line);
+
+                            BeatNumberRenderer.Render(
+                                new Vector3(
+                                    Screen.width / 2f + 160 / NoteCanvas.ScaleFactor.Value - 100, // BPM表示位置を少し右にずらす
+                                    y,
+                                    0),
+                                Mathf.RoundToInt(b.bpm));
                         }
                     }
 

@@ -1,4 +1,4 @@
-﻿// ========================================
+// ========================================
 //
 // NoteMaker Project
 //
@@ -41,6 +41,9 @@ namespace NoteMaker.Presenter
         public readonly Subject<Note> RequestForAddNote = new Subject<Note>();           // ノーツ追加要求
         public readonly Subject<Note> RequestForChangeNoteStatus = new Subject<Note>();  // ノーツ状態変更要求
 
+        public readonly Subject<BpmChange> RequestForRemoveBpmChange = new Subject<BpmChange>(); // BPM削除要求
+        public readonly Subject<BpmChange> RequestForAddBpmChange = new Subject<BpmChange>();    // BPM追加要求
+
         void Awake()
         {
             Audio.OnLoad.First().Subscribe(_ => Init());
@@ -58,6 +61,14 @@ namespace NoteMaker.Presenter
                 canvasEvents.NotesRegionOnMouseDownObservable
                     .Where(_ => !KeyInput.CtrlKey())               // Ctrl 中は別操作
                     .Where(_ => !Input.GetMouseButtonDown(1))      // 右クリックは除外
+                    .Where(_ => !Input.GetKey(KeyCode.B))          // Bキー押下時はBPM変更操作
+                    .Where(_ => 0 <= NoteCanvas.ClosestNotePosition.Value.num);
+
+            var bpmChangeMouseDownObservable =
+                canvasEvents.NotesRegionOnMouseDownObservable
+                    .Where(_ => !KeyInput.CtrlKey())
+                    .Where(_ => !Input.GetMouseButtonDown(1))
+                    .Where(_ => Input.GetKey(KeyCode.B))           // Bキー押下時
                     .Where(_ => 0 <= NoteCanvas.ClosestNotePosition.Value.num);
 
             //===============================
@@ -125,7 +136,7 @@ namespace NoteMaker.Presenter
             RequestForRemoveNote
                 .Buffer(RequestForRemoveNote.ThrottleFrame(1))
                 .Select(list =>
-                    list.OrderBy(n => n.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value)).ToList())
+                    list.OrderBy(n => n.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value, EditData.BpmChanges)).ToList())
                 .Subscribe(notes =>
                     EditCommandManager.Do(
                         new Command(
@@ -138,12 +149,40 @@ namespace NoteMaker.Presenter
             RequestForAddNote
                 .Buffer(RequestForAddNote.ThrottleFrame(1))
                 .Select(list =>
-                    list.OrderBy(n => n.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value)).ToList())
+                    list.OrderBy(n => n.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value, EditData.BpmChanges)).ToList())
                 .Subscribe(notes =>
                     EditCommandManager.Do(
                         new Command(
                             () => notes.ForEach(AddNote),
                             () => notes.ForEach(RemoveNote))));
+
+            //===============================
+            // BPM変更追加・削除（Undo/Redo 対応）
+            //===============================
+            RequestForRemoveBpmChange
+                .Subscribe(b => EditCommandManager.Do(
+                    new Command(() => RemoveBpmChange(b), () => AddBpmChange(b))));
+
+            RequestForAddBpmChange
+                .Subscribe(b => EditCommandManager.Do(
+                    new Command(() => AddBpmChange(b), () => RemoveBpmChange(b))));
+
+            //===============================
+            // BPMイベントクリック処理
+            //===============================
+            bpmChangeMouseDownObservable.Subscribe(_ =>
+            {
+                var tick = NoteCanvas.ClosestNotePosition.Value.num;
+                var existing = EditData.BpmChanges.FirstOrDefault(b => b.tick == tick);
+                if (existing != null)
+                {
+                    RequestForRemoveBpmChange.OnNext(existing);
+                }
+                else
+                {
+                    RequestForAddBpmChange.OnNext(new BpmChange(tick, EditData.BPM.Value));
+                }
+            });
 
             //===============================
             // ノーツ状態変更（Undo/Redo 対応）
@@ -152,7 +191,7 @@ namespace NoteMaker.Presenter
                 .Select(note => new { current = note, prev = EditData.Notes[note.position].note })
                 .Buffer(RequestForChangeNoteStatus.ThrottleFrame(1))
                 .Select(list =>
-                    list.OrderBy(n => n.current.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value)).ToList())
+                    list.OrderBy(n => n.current.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value, EditData.BpmChanges)).ToList())
                 .Subscribe(notes =>
                     EditCommandManager.Do(
                         new Command(
@@ -234,6 +273,26 @@ namespace NoteMaker.Presenter
             var noteObject = EditData.Notes[note.position];
             noteObject.Dispose();
             EditData.Notes.Remove(noteObject.note.position);
+        }
+
+        //===============================
+        // BPM変更の追加・削除
+        //===============================
+        public void AddBpmChange(BpmChange b)
+        {
+            if (!EditData.BpmChanges.Any(x => x.tick == b.tick))
+            {
+                EditData.BpmChanges.Add(b);
+            }
+        }
+
+        public void RemoveBpmChange(BpmChange b)
+        {
+            var target = EditData.BpmChanges.FirstOrDefault(x => x.tick == b.tick);
+            if (target != null)
+            {
+                EditData.BpmChanges.Remove(target);
+            }
         }
     }
 }

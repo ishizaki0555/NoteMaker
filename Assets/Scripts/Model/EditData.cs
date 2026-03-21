@@ -1,4 +1,4 @@
-﻿// ========================================
+// ========================================
 // 
 // NoteMaker Project
 // 
@@ -18,16 +18,28 @@ using UniRx;
 
 namespace NoteMaker.Model
 {
-    public class BpmCahnge
+    public class BpmChange
     {
-        public int beatIndex;
+        public int tick;
         public float bpm;
-        public BpmCahnge() { }
+        public BpmChange() { }
 
-        public BpmCahnge(int beatIndex, float bpm)
+        public BpmChange(int tick, float bpm)
         {
-            this.beatIndex = beatIndex;
+            this.tick = tick;
             this.bpm = bpm;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is BpmChange)) return false;
+            var other = (BpmChange)obj;
+            return tick == other.tick && Mathf.Approximately(bpm, other.bpm);
+        }
+
+        public override int GetHashCode()
+        {
+            return tick.GetHashCode() ^ bpm.GetHashCode();
         }
     }
 
@@ -47,7 +59,7 @@ namespace NoteMaker.Model
         ReactiveProperty<int> BPM_ = new ReactiveProperty<int>(120);                        // 楽曲 BPM
         ReactiveProperty<int> offsetSamples_ = new ReactiveProperty<int>(0);                // ノーツ開始位置のオフセット（サンプル単位）
         ReactiveProperty<string> difficultyName_ = new ReactiveProperty<string>("Easy");    // 難易度名
-        ReactiveCollection<BpmCahnge> bpmChanges_ = new ReactiveCollection<BpmCahnge>();    
+        ReactiveCollection<BpmChange> bpmChanges_ = new ReactiveCollection<BpmChange>();    
 
         Dictionary<NotePosition, NoteObject> notes_ = new Dictionary<NotePosition, NoteObject>(); // ノーツ配置データ
 
@@ -88,6 +100,6 @@ namespace NoteMaker.Model
         public static Dictionary<NotePosition, NoteObject> Notes => Instance.notes_;
 
         /// <summary>どこでソフランを実行するかのデータ</summary>
-        public static ReactiveCollection<BpmCahnge> BpmCahnges => Instance.bpmChanges_;
+        public static ReactiveCollection<BpmChange> BpmChanges => Instance.bpmChanges_;
     }
 }

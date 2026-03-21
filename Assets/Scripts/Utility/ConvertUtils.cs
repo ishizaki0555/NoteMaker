@@ -1,4 +1,4 @@
-﻿// ========================================
+// ========================================
 // 
 // NoteMaker Project
 // 
@@ -82,7 +82,7 @@ namespace NoteMaker.Utility
             return new Vector3(
                 NoteCanvasPositionX(notePosition.block) * NoteCanvas.ScaleFactor.Value,
                 SamplesToCanvasPositionY(
-                    notePosition.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value)),
+                    notePosition.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value, EditData.BpmChanges)),
                 0);
         }
 

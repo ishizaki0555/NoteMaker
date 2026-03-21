@@ -1,4 +1,4 @@
-﻿// ========================================
+// ========================================
 //
 // NoteMaker Project
 //
@@ -116,7 +116,7 @@ namespace NoteMaker.Presenter
             this.UpdateAsObservable()
                 .Where(_ => KeyInput.CtrlPlus(KeyCode.V))
                 .Where(_ => copiedNotes.Count > 0)
-                .Select(_ => copiedNotes.OrderBy(n => n.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value)))
+                .Select(_ => copiedNotes.OrderBy(n => n.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value, EditData.BpmChanges)))
                 .Subscribe(sortedCopiedNotes =>
                 {
                     var first = sortedCopiedNotes.First().position;
@@ -129,7 +129,7 @@ namespace NoteMaker.Presenter
                     var validNotes = copiedNotes
                         .Where(note =>
                             note.position.Add(0, note.position.LPB * beatDiff, 0)
-                                .ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value)
+                                .ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value, EditData.BpmChanges)
                             < Audio.Source.clip.samples)
                         .ToList();
 

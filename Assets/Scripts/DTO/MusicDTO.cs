@@ -1,4 +1,4 @@
-﻿// ========================================
+// ========================================
 // 
 // NoteMaker Project
 // 
@@ -30,6 +30,7 @@ namespace NoteMaker.DTO
             public int maxBlock;         // 使用可能なレーン（ブロック）数
             public int BPM;              // 楽曲の BPM（テンポ）
             public int offset;           // ノーツ開始位置のオフセット
+            public List<BpmChangeDTO> bpmChanges; // BPM変更イベントリスト
             public List<Note> notes;     // 配置されたノーツ一覧
         }
 
@@ -50,8 +51,8 @@ namespace NoteMaker.DTO
         [System.Serializable]
         public class BpmChangeDTO
         {
-            public int beatindex;       // 何拍目でBPMが変わるか
-            public float bpm;           // 追加のBPM
+            public int tick;            // LPB基準のノーツ位置（num）
+            public float bpm;           // 変更後のBPM
         }
     }
 }
