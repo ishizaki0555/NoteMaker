@@ -15,6 +15,7 @@ using NoteMaker.Notes;
 using NoteMaker.Utility;
 using System.Collections.Generic;
 using UniRx;
+using UnityEngine;
 
 namespace NoteMaker.Model
 {
