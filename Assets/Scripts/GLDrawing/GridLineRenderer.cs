@@ -153,8 +153,8 @@ namespace NoteMaker.GLDrawing
                             blockLines[i].color = blockLineColor;
                     }
 
-                    // BPM調整用縦線の生成・更新
-                    var bpmCanvasX = ConvertUtils.BlockNumToCanvasPositionX(EditData.MaxBlock.Value) * blockSpacingFactor + horizontalOffset - 60f;
+                    // BPM調整用縦線の生成・更新 (レーン数に依存せず固定位置に描画)
+                    var bpmCanvasX = (160f / NoteCanvas.ScaleFactor.Value) * blockSpacingFactor + horizontalOffset;
                     var bpmScreenX = ConvertUtils.CanvasToScreenPosition(new Vector3(bpmCanvasX, 0, 0)).x;
                     if (!isBpmLineInitialized)
                     {
