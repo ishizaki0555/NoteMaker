@@ -60,7 +60,12 @@ namespace NoteMaker.Presenter
             clip.GetData(raw, 0);
 
             // --- raw, sampleRate, channels を別スレッドで解析 ---
-            Observable.Start(() => EstimateBpmFromOnsetByFFT(raw, sampleRate, channels))
+            Observable.Start(() =>
+                {
+                    float frameRate;
+                    float[] onset = ComputeOnsetEnvelope(raw, channels, sampleRate, out frameRate);
+                    return EstimateBpmFromOnsetByFFT(onset, frameRate);
+                })
                 .ObserveOnMainThread()
                 .Subscribe(bpm =>
                 {
@@ -72,6 +77,53 @@ namespace NoteMaker.Presenter
                     Debug.LogException(ex);
                 })
                 .AddTo(this);
+        }
+
+        float[] ComputeOnsetEnvelope(float[] raw, int channels, int sampleRate, out float frameRate)
+        {
+            frameRate = 100f; // 100 Hz resolution is common for BPM estimation
+            int samplesPerFrame = Mathf.RoundToInt(sampleRate / frameRate);
+            int frameCount = (raw.Length / channels) / samplesPerFrame;
+            float[] onset = new float[frameCount];
+
+            for (int i = 0; i < frameCount; i++)
+            {
+                float sum = 0f;
+                int startIdx = i * samplesPerFrame * channels;
+                int endIdx = startIdx + samplesPerFrame * channels;
+
+                if (endIdx > raw.Length) endIdx = raw.Length;
+
+                for (int j = startIdx; j < endIdx; j++)
+                {
+                    float sample = raw[j];
+                    sum += sample * sample; // Energy
+                }
+
+                int count = endIdx - startIdx;
+                if (count > 0)
+                    onset[i] = Mathf.Sqrt(sum / count);
+            }
+
+            // Compute positive difference to isolate "attacks" (onsets)
+            float[] diff = new float[frameCount];
+            for (int i = 1; i < frameCount; i++)
+            {
+                diff[i] = Mathf.Max(0f, onset[i] - onset[i - 1]);
+            }
+            
+            // Normalize the onset envelope for better FFT precision
+            float maxDiff = 0f;
+            for (int i = 0; i < frameCount; i++)
+            {
+                if (diff[i] > maxDiff) maxDiff = diff[i];
+            }
+            if (maxDiff > 0f)
+            {
+                for (int i = 0; i < frameCount; i++) diff[i] /= maxDiff;
+            }
+
+            return diff;
         }
 
         // onset: 正規化済みオンセット包絡（長さ N）

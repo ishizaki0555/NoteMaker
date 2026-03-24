@@ -1,4 +1,4 @@
-﻿// ========================================
+// ========================================
 // 
 // NoteMaker Project
 // 
@@ -44,7 +44,12 @@ namespace NoteMaker.SoundEffect
 
             // 再生中に編集操作が行われたらキューを再構築するトリガー
             var editedDuringPlaybackObservable = Observable.Merge(
-                    EditData.OffsetSamples.Select(_ => false),
+                    EditData.BPM.Skip(1).Select(_ => false),
+                    EditData.BpmChanges.ObserveAdd().Select(_ => false),
+                    EditData.BpmChanges.ObserveRemove().Select(_ => false),
+                    EditData.BpmChanges.ObserveReplace().Select(_ => false),
+                    EditData.BpmChanges.ObserveReset().Select(_ => false),
+                    EditData.OffsetSamples.Skip(1).Select(_ => false),
                     editPresenter.RequestForEditNote.Select(_ => false),
                     editPresenter.RequestForRemoveNote.Select(_ => false),
                     editPresenter.RequestForAddNote.Select(_ => false))
@@ -59,7 +64,8 @@ namespace NoteMaker.SoundEffect
                             .Select(noteObject =>
                                 noteObject.note.position.ToSamples(
                                     Audio.Source.clip.frequency,
-                                    EditData.BPM.Value))
+                                    EditData.BPM.Value,
+                                    EditData.BpmChanges))
                             .Distinct()
                             .Select(samples => samples + EditData.OffsetSamples.Value)
                             .Where(samples => Audio.Source.timeSamples <= samples)
@@ -69,7 +75,7 @@ namespace NoteMaker.SoundEffect
                 .SelectMany(samplesQueue =>
                     this.LateUpdateAsObservable()
                         .TakeWhile(_ => Audio.IsPlaying.Value)
-                        .TakeUntil(editedDuringPlaybackObservable.Skip(1))
+                        .TakeUntil(editedDuringPlaybackObservable)
                         .Select(_ => samplesQueue))
                 // キューが空でない
                 .Where(samplesQueue => samplesQueue.Count > 0)
