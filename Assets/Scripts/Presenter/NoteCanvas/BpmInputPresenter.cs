@@ -15,6 +15,7 @@ using NoteMaker.DTO;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Linq;
 
 namespace NoteMaker.Presenter
 {
@@ -26,16 +27,23 @@ namespace NoteMaker.Presenter
     {
         [SerializeField] InputField inputField = default;
         [SerializeField] Button okButton = default;
+        [SerializeField] Button cancelButton = default;
+        [SerializeField] Button deleteButton = default;
 
         int currentTick = 0;
 
         void Awake()
         {
             if (okButton != null)
-            {
                 okButton.OnClickAsObservable().Subscribe(_ => OnOkButtonClicked()).AddTo(this);
-            }
+
+            if (cancelButton != null)
+                cancelButton.OnClickAsObservable().Subscribe(_ => OnCancelButtonClicked()).AddTo(this);
+
+            if (deleteButton != null)
+                deleteButton.OnClickAsObservable().Subscribe(_ => OnDeleteButtonClicked()).AddTo(this);
         }
+
 
         /// <summary>
         /// 指定された位置（tick）に対してBPM入力を受け付けるため、UIを表示します。
@@ -68,6 +76,24 @@ namespace NoteMaker.Presenter
             }
 
             // 自身を非表示にする
+            gameObject.SetActive(false);
+        }
+
+        void OnCancelButtonClicked()
+        {
+            gameObject.SetActive(false);
+        }
+
+        void OnDeleteButtonClicked()
+        {
+            // 現在の tick にある BPMChange を探す
+            var target = EditData.BpmChanges.FirstOrDefault(x => x.tick == currentTick);
+
+            if (target != null)
+            {
+                EditNotesPresenter.Instance.RequestForRemoveBpmChange.OnNext(target);
+            }
+
             gameObject.SetActive(false);
         }
     }

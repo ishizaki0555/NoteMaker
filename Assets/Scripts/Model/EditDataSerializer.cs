@@ -39,6 +39,7 @@ namespace NoteMaker.Model
             dto.maxBlock = EditData.MaxBlock.Value;
             dto.offset = EditData.OffsetSamples.Value;
             dto.name = Path.GetFileNameWithoutExtension(EditData.Name.Value);
+            dto.maxLPB = EditData.Notes.Count > 0 ? EditData.Notes.Values.Max(n => n.note.position.LPB) : EditData.LPB.Value;
             
             dto.bpmChanges = new List<MusicDTO.BpmChangeDTO>();
             foreach (var b in EditData.BpmChanges)
@@ -49,7 +50,7 @@ namespace NoteMaker.Model
             // Long ノーツの子ノーツは prev を持つものを除外して並び替え
             var sortedNoteObjects = EditData.Notes.Values
                 .Where(note => !(note.note.type == NoteTypes.Long && EditData.Notes.ContainsKey(note.note.prev)))
-                .OrderBy(note => note.note.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value, null));
+                .OrderBy(note => note.note.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value, EditData.BpmChanges));
 
             dto.notes = new List<MusicDTO.Note>();
 

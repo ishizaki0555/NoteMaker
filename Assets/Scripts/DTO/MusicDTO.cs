@@ -28,6 +28,7 @@ namespace NoteMaker.DTO
         {
             public string name;          // 楽曲名
             public int maxBlock;         // 使用可能なレーン（ブロック）数
+            public int maxLPB;           // 譜面内で使用されている最大のLPB数
             public int BPM;              // 楽曲の BPM（テンポ）
             public int offset;           // ノーツ開始位置のオフセット
             public List<BpmChangeDTO> bpmChanges; // BPM変更イベントリスト

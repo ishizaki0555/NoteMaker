@@ -65,7 +65,7 @@ namespace NoteMaker.SoundEffect
                                 noteObject.note.position.ToSamples(
                                     Audio.Source.clip.frequency,
                                     EditData.BPM.Value,
-                                    null))
+                                    EditData.BpmChanges))
                             .Distinct()
                             .Select(samples => samples + EditData.OffsetSamples.Value)
                             .Where(samples => Audio.Source.timeSamples <= samples)

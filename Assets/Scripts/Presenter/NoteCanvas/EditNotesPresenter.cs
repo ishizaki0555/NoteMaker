@@ -137,7 +137,7 @@ namespace NoteMaker.Presenter
             RequestForRemoveNote
                 .Buffer(RequestForRemoveNote.ThrottleFrame(1))
                 .Select(list =>
-                    list.OrderBy(n => n.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value, null)).ToList())
+                    list.OrderBy(n => n.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value, EditData.BpmChanges)).ToList())
                 .Subscribe(notes =>
                     EditCommandManager.Do(
                         new Command(
@@ -150,7 +150,7 @@ namespace NoteMaker.Presenter
             RequestForAddNote
                 .Buffer(RequestForAddNote.ThrottleFrame(1))
                 .Select(list =>
-                    list.OrderBy(n => n.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value, null)).ToList())
+                    list.OrderBy(n => n.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value, EditData.BpmChanges)).ToList())
                 .Subscribe(notes =>
                     EditCommandManager.Do(
                         new Command(
@@ -190,7 +190,7 @@ namespace NoteMaker.Presenter
                 .Select(note => new { current = note, prev = EditData.Notes[note.position].note })
                 .Buffer(RequestForChangeNoteStatus.ThrottleFrame(1))
                 .Select(list =>
-                    list.OrderBy(n => n.current.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value, null)).ToList())
+                    list.OrderBy(n => n.current.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value, EditData.BpmChanges)).ToList())
                 .Subscribe(notes =>
                     EditCommandManager.Do(
                         new Command(
