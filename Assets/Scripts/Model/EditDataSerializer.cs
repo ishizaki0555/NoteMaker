@@ -49,7 +49,7 @@ namespace NoteMaker.Model
             // Long ノーツの子ノーツは prev を持つものを除外して並び替え
             var sortedNoteObjects = EditData.Notes.Values
                 .Where(note => !(note.note.type == NoteTypes.Long && EditData.Notes.ContainsKey(note.note.prev)))
-                .OrderBy(note => note.note.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value, EditData.BpmChanges));
+                .OrderBy(note => note.note.position.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value, null));
 
             dto.notes = new List<MusicDTO.Note>();
 

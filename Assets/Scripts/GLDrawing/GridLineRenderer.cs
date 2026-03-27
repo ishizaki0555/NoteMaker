@@ -93,7 +93,7 @@ namespace NoteMaker.GLDrawing
                         
                         // 各拍のサンプル位置を計算
                         beatSamples = Enumerable.Range(0, beatNum)
-                            .Select(i => BPMUtility.CalculateSamples(Audio.Source.clip.frequency, EditData.BPM.Value, EditData.LPB.Value, i, EditData.BpmChanges))
+                            .Select(i => BPMUtility.CalculateSamples(Audio.Source.clip.frequency, EditData.BPM.Value, EditData.LPB.Value, i, null))
                             .ToArray();
 
                         // サンプル位置を Y 座標に変換し、Line を生成
@@ -266,7 +266,7 @@ namespace NoteMaker.GLDrawing
                     // BPM変更ラインの描画 (BeatNumberRenderer.End よりも前に行う)
                     foreach (var b in EditData.BpmChanges)
                     {
-                        int samples = BPMUtility.CalculateSamples(Audio.Source.clip.frequency, EditData.BPM.Value, EditData.LPB.Value, b.tick, EditData.BpmChanges);
+                        int samples = BPMUtility.CalculateSamples(Audio.Source.clip.frequency, EditData.BPM.Value, EditData.LPB.Value, b.tick, null);
                         float y = ConvertUtils.SamplesToCanvasPositionY(samples);
                         float screenY = ConvertUtils.CanvasToScreenPosition(new Vector3(0, y, 0)).y;
                         

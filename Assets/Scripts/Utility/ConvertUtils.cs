@@ -82,7 +82,7 @@ namespace NoteMaker.Utility
             return new Vector3(
                 NoteCanvasPositionX(notePosition.block) * NoteCanvas.ScaleFactor.Value,
                 SamplesToCanvasPositionY(
-                    notePosition.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value, EditData.BpmChanges)),
+                    notePosition.ToSamples(Audio.Source.clip.frequency, EditData.BPM.Value, null)),
                 0);
         }
 
