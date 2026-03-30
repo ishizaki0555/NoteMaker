@@ -57,7 +57,7 @@ namespace NoteMaker.Model
         ReactiveProperty<string> name_ = new ReactiveProperty<string>();                    // 楽曲名
         ReactiveProperty<int> maxBlock_ = new ReactiveProperty<int>(5);                     // 使用レーン数
         ReactiveProperty<int> LPB_ = new ReactiveProperty<int>(4);                          // 1 小節あたりの分割数
-        ReactiveProperty<int> BPM_ = new ReactiveProperty<int>(120);                        // 楽曲 BPM
+        ReactiveProperty<float> BPM_ = new ReactiveProperty<float>(120f);                        // 楽曲 BPM
         ReactiveProperty<int> offsetSamples_ = new ReactiveProperty<int>(0);                // ノーツ開始位置のオフセット（サンプル単位）
         ReactiveProperty<string> difficultyName_ = new ReactiveProperty<string>("Easy");    // 難易度名
         ReactiveCollection<BpmChange> bpmChanges_ = new ReactiveCollection<BpmChange>();    
@@ -82,7 +82,7 @@ namespace NoteMaker.Model
         /// <summary>
         /// 楽曲 BPM を ReactiveProperty として公開します。
         /// </summary>
-        public static ReactiveProperty<int> BPM => Instance.BPM_;
+        public static ReactiveProperty<float> BPM => Instance.BPM_;
 
         /// <summary>
         /// ノーツ開始位置のオフセット（サンプル単位）を ReactiveProperty として公開します。

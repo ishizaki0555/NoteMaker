@@ -284,9 +284,9 @@ namespace NoteMaker.GLDrawing
                             BeatNumberRenderer.Render(
                                 new Vector3(
                                     bpmScreenX + 30f, // 新しいBPMラインの少し右
-                                    screenY,          // スクロール対応のスクリーンY座標
+                                    screenY + 15,          // スクロール対応のスクリーンY座標
                                     0),
-                                Mathf.RoundToInt(b.bpm));
+                                b.bpm);
                         }
                     }
 

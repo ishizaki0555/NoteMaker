@@ -56,7 +56,7 @@ namespace NoteMaker.GLDrawing
         /// </summary>
         /// <param name="pos">表示位置（ワールド座標）</param>
         /// <param name="number">表示する拍番号</param>
-        public static void Render(Vector3 pos, int number)
+        public static void Render(Vector3 pos, float number)
         {
             if (countCurrentActive < size)
             {
