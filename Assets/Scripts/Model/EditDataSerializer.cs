@@ -42,7 +42,7 @@ namespace NoteMaker.Model
             dto.maxLPB = EditData.Notes.Count > 0 ? EditData.Notes.Values.Max(n => n.note.position.LPB) : EditData.LPB.Value;
             
             dto.bpmChanges = new List<MusicDTO.BpmChangeDTO>();
-            foreach (var b in EditData.BpmChanges)
+            foreach (var b in EditData.BpmChanges.OrderBy(x => x.tick))
             {
                 dto.bpmChanges.Add(new MusicDTO.BpmChangeDTO { tick = b.tick, bpm = b.bpm });
             }

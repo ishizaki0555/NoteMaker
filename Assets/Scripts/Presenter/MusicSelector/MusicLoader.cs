@@ -1,4 +1,4 @@
-﻿// ========================================
+// ========================================
 //
 // NoteMaker Project
 //
@@ -148,6 +148,7 @@ namespace NoteMaker.Presenter
             }
 
             EditData.Notes.Clear();
+            EditData.BpmChanges.Clear();
             Resources.UnloadUnusedAssets();
         }
     }
