@@ -12278,7 +12278,7 @@ MonoBehaviour:
   windowRoot: {fileID: 83399677}
   openButton: {fileID: 955562694}
   closeButton: {fileID: 2145651678}
-  playButton: {fileID: 1697624928}
+  previewButton: {fileID: 1697624928}
   saveButton: {fileID: 606070963}
   waveformImage: {fileID: 227229814}
   selectionOverlay: {fileID: 1391505993}

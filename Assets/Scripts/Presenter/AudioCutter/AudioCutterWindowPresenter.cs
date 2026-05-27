@@ -1,10 +1,8 @@
 using NoteMaker.Model;
 using NoteMaker.Utility;
-using System.Collections;
 using System.IO;
 using UniRx;
 using UniRx.Triggers;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -21,7 +19,7 @@ namespace NoteMaker.Presenter.AudioCutter
         [SerializeField] private GameObject windowRoot = default;             // 切り抜き画面全体のルート
         [SerializeField] private Button openButton = default;                 // 開くボタン
         [SerializeField] private Button closeButton = default;                // 閉じるボタン
-        [SerializeField] private Button playButton = default;
+        [SerializeField] private Button previewButton = default;              // プレビュー再生・停止ボタン
         [SerializeField] private Button saveButton = default;                 // 切り抜き実行ボタン
         [SerializeField] private RawImage waveformImage = default;            // 波形を描画する画像
         [SerializeField] private RectTransform selectionOverlay = default;    // 選択範囲を示す半透明のオーバーレイ
@@ -36,11 +34,22 @@ namespace NoteMaker.Presenter.AudioCutter
         private float selectionEndRatio = 1f;
         private PointerEventData.InputButton? draggingButton = null;
         private bool isDragging = false;
+        
+        private AudioSource previewSource;
+        private bool isPreviewPlaying = false;
+        private int previewEndSample = 0;
+        
+        private Color[] cachedPixels;
+        private Texture2D waveformTex;
 
         private void Start()
         {
             // 初期状態は非表示
             windowRoot.SetActive(false);
+
+            // プレビュー用のAudioSourceを追加
+            previewSource = gameObject.AddComponent<AudioSource>();
+            previewSource.playOnAwake = false;
 
             // 開くボタンでウィンドウを表示
             openButton.onClick.AsObservable()
@@ -52,10 +61,13 @@ namespace NoteMaker.Presenter.AudioCutter
                 .Subscribe(_ => CloseWindow())
                 .AddTo(this);
 
-            // 再生ボタンで選択範囲を再生
-            playButton.onClick.AsObservable()
-                .Subscribe(_ => SamplePlay())
-                .AddTo(this);
+            // プレビューボタンで再生・停止
+            if (previewButton != null)
+            {
+                previewButton.onClick.AsObservable()
+                    .Subscribe(_ => TogglePreview())
+                    .AddTo(this);
+            }
 
             // 保存ボタンで切り抜き実行
             saveButton.onClick.AsObservable()
@@ -64,11 +76,9 @@ namespace NoteMaker.Presenter.AudioCutter
 
             // 波形画像上でのマウスクリック＆ドラッグによる範囲選択
             var trigger = waveformImage.gameObject.AddComponent<ObservableEventTrigger>();
-
-            // クリック開始
+            
             trigger.OnPointerDownAsObservable()
                 .Subscribe(eventData => {
-                    isDragging = true;
                     RectTransformUtility.ScreenPointToLocalPointInRectangle(waveformImage.rectTransform, eventData.position, eventData.pressEventCamera, out Vector2 localPoint);
                     float ratio = Mathf.Clamp01((localPoint.x + waveformImage.rectTransform.rect.width / 2f) / waveformImage.rectTransform.rect.width);
 
@@ -90,7 +100,6 @@ namespace NoteMaker.Presenter.AudioCutter
                 })
                 .AddTo(this);
 
-            // ドラッグ中
             trigger.OnDragAsObservable()
                 .Where(_ => isDragging)
                 .Subscribe(eventData => {
@@ -113,8 +122,50 @@ namespace NoteMaker.Presenter.AudioCutter
             trigger.OnPointerUpAsObservable()
                 .Subscribe(_ => {
                     isDragging = false;
+                    draggingButton = null;
                 })
                 .AddTo(this);
+        }
+
+        private void Update()
+        {
+            // プレビュー再生中の終了判定
+            if (isPreviewPlaying && previewSource.isPlaying)
+            {
+                if (previewSource.timeSamples >= previewEndSample)
+                {
+                    StopPreview();
+                }
+                else
+                {
+                    UpdatePlaybackLineUI();
+                }
+            }
+            else if (isPreviewPlaying && !previewSource.isPlaying)
+            {
+                StopPreview(); // 末尾まで再生されて止まった場合
+            }
+        }
+        
+        private void UpdatePlaybackLineUI()
+        {
+            if (Audio.Source.clip == null || cachedPixels == null || waveformTex == null) return;
+            
+            float ratio = (float)previewSource.timeSamples / Audio.Source.clip.samples;
+            
+            Color[] currentPixels = (Color[])cachedPixels.Clone();
+            int xLine = Mathf.RoundToInt(ratio * textureWidth);
+            xLine = Mathf.Clamp(xLine, 0, textureWidth - 1);
+            
+            Color playLineColor = Color.white; // 再生ラインの色
+            
+            for (int y = 0; y < textureHeight; y++)
+            {
+                currentPixels[y * textureWidth + xLine] = playLineColor;
+            }
+            
+            waveformTex.SetPixels(currentPixels);
+            waveformTex.Apply();
         }
 
         /// <summary>
@@ -125,6 +176,12 @@ namespace NoteMaker.Presenter.AudioCutter
             windowRoot.SetActive(true);
             selectionStartRatio = 0f;
             selectionEndRatio = 1f;
+            
+            if (previewSource != null && Audio.Source != null)
+            {
+                previewSource.clip = Audio.Source.clip;
+            }
+
             UpdateSelectionUI();
             GenerateWaveformTexture();
         }
@@ -134,7 +191,68 @@ namespace NoteMaker.Presenter.AudioCutter
         /// </summary>
         public void CloseWindow()
         {
+            StopPreview();
             windowRoot.SetActive(false);
+        }
+
+        private void TogglePreview()
+        {
+            if (isPreviewPlaying)
+            {
+                StopPreview();
+            }
+            else
+            {
+                StartPreview();
+            }
+        }
+        
+        private void StartPreview()
+        {
+            var clip = Audio.Source.clip;
+            if (clip == null || previewSource == null) return;
+            
+            float minRatio = Mathf.Min(selectionStartRatio, selectionEndRatio);
+            float maxRatio = Mathf.Max(selectionStartRatio, selectionEndRatio);
+
+            int startSample = (int)(minRatio * clip.samples);
+            previewEndSample = (int)(maxRatio * clip.samples);
+            
+            if (startSample >= previewEndSample) return;
+
+            previewSource.clip = clip;
+            previewSource.timeSamples = startSample;
+            previewSource.Play();
+            isPreviewPlaying = true;
+            
+            // プレビュー再生中のUI表示変更
+            if (previewButton != null)
+            {
+                var text = previewButton.GetComponentInChildren<Text>();
+                if (text != null) text.text = "Stop";
+            }
+        }
+        
+        private void StopPreview()
+        {
+            if (previewSource != null)
+            {
+                previewSource.Stop();
+            }
+            isPreviewPlaying = false;
+            
+            // 停止時はベースの波形画像に戻す
+            if (cachedPixels != null && waveformTex != null)
+            {
+                waveformTex.SetPixels(cachedPixels);
+                waveformTex.Apply();
+            }
+            
+            if (previewButton != null)
+            {
+                var text = previewButton.GetComponentInChildren<Text>();
+                if (text != null) text.text = "Play";
+            }
         }
 
         private void UpdateSelectionUI()
@@ -145,7 +263,6 @@ namespace NoteMaker.Presenter.AudioCutter
             float maxRatio = Mathf.Max(selectionStartRatio, selectionEndRatio);
 
             // オーバーレイの位置と幅を更新
-            float width = waveformImage.rectTransform.rect.width;
             selectionOverlay.anchorMin = new Vector2(minRatio, 0f);
             selectionOverlay.anchorMax = new Vector2(maxRatio, 1f);
             selectionOverlay.offsetMin = Vector2.zero;
@@ -160,30 +277,6 @@ namespace NoteMaker.Presenter.AudioCutter
             }
 
             GenerateWaveformTexture();
-        }
-
-        public void SamplePlay()
-        {
-                var clip = Audio.Source.clip;
-                if (clip == null) return;
-    
-                float minRatio = Mathf.Min(selectionStartRatio, selectionEndRatio);
-                float maxRatio = Mathf.Max(selectionStartRatio, selectionEndRatio);
-    
-                float startTime = minRatio * clip.length;
-                float endTime = maxRatio * clip.length;
-    
-                Audio.Source.time = startTime;
-                Audio.Source.Play();
-    
-                // 選択範囲の終了時間で停止するコルーチンを開始
-                StartCoroutine(StopAfterDelay(endTime - startTime));
-        }
-
-        private IEnumerator StopAfterDelay(float delay)
-        {
-            yield return new WaitForSeconds(delay);
-            Audio.Source.Stop();
         }
 
         private void GenerateWaveformTexture()
@@ -229,6 +322,10 @@ namespace NoteMaker.Presenter.AudioCutter
             }
 
             DrawSelectionLines(pixels);
+
+            // プレビュー再生時に使うためにベース画像をキャッシュ
+            cachedPixels = (Color[])pixels.Clone();
+            waveformTex = tex;
 
             tex.SetPixels(pixels);
             tex.Apply();
