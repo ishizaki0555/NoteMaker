@@ -1,9 +1,12 @@
 using NoteMaker.Model;
 using NoteMaker.Utility;
+using System.Collections;
 using System.IO;
 using UniRx;
 using UniRx.Triggers;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace NoteMaker.Presenter.AudioCutter
@@ -15,13 +18,14 @@ namespace NoteMaker.Presenter.AudioCutter
     public class AudioCutterWindowPresenter : MonoBehaviour
     {
         [Header("UI References")]
-        [SerializeField] private GameObject windowRoot;             // 切り抜き画面全体のルート
-        [SerializeField] private Button openButton;                 // 開くボタン
-        [SerializeField] private Button closeButton;                // 閉じるボタン
-        [SerializeField] private Button saveButton;                 // 切り抜き実行ボタン
-        [SerializeField] private RawImage waveformImage;            // 波形を描画する画像
-        [SerializeField] private RectTransform selectionOverlay;    // 選択範囲を示す半透明のオーバーレイ
-        [SerializeField] private Text rangeText;                    // 選択範囲の時間表示用
+        [SerializeField] private GameObject windowRoot = default;             // 切り抜き画面全体のルート
+        [SerializeField] private Button openButton = default;                 // 開くボタン
+        [SerializeField] private Button closeButton = default;                // 閉じるボタン
+        [SerializeField] private Button playButton = default;
+        [SerializeField] private Button saveButton = default;                 // 切り抜き実行ボタン
+        [SerializeField] private RawImage waveformImage = default;            // 波形を描画する画像
+        [SerializeField] private RectTransform selectionOverlay = default;    // 選択範囲を示す半透明のオーバーレイ
+        [SerializeField] private Text rangeText = default;                    // 選択範囲の時間表示用
 
         [Header("Waveform Settings")]
         [SerializeField] private int textureWidth = 1024;
@@ -30,6 +34,7 @@ namespace NoteMaker.Presenter.AudioCutter
 
         private float selectionStartRatio = 0f;
         private float selectionEndRatio = 1f;
+        private PointerEventData.InputButton? draggingButton = null;
         private bool isDragging = false;
 
         private void Start()
@@ -47,6 +52,11 @@ namespace NoteMaker.Presenter.AudioCutter
                 .Subscribe(_ => CloseWindow())
                 .AddTo(this);
 
+            // 再生ボタンで選択範囲を再生
+            playButton.onClick.AsObservable()
+                .Subscribe(_ => SamplePlay())
+                .AddTo(this);
+
             // 保存ボタンで切り抜き実行
             saveButton.onClick.AsObservable()
                 .Subscribe(_ => SaveSample())
@@ -54,24 +64,48 @@ namespace NoteMaker.Presenter.AudioCutter
 
             // 波形画像上でのマウスクリック＆ドラッグによる範囲選択
             var trigger = waveformImage.gameObject.AddComponent<ObservableEventTrigger>();
-            
+
+            // クリック開始
             trigger.OnPointerDownAsObservable()
                 .Subscribe(eventData => {
                     isDragging = true;
                     RectTransformUtility.ScreenPointToLocalPointInRectangle(waveformImage.rectTransform, eventData.position, eventData.pressEventCamera, out Vector2 localPoint);
                     float ratio = Mathf.Clamp01((localPoint.x + waveformImage.rectTransform.rect.width / 2f) / waveformImage.rectTransform.rect.width);
-                    selectionStartRatio = ratio;
-                    selectionEndRatio = ratio;
+
+                    // 左クリックで開始位置、右クリックで終了位置を設定
+                    if (eventData.button == PointerEventData.InputButton.Left)
+                    {
+                        selectionStartRatio = ratio;
+                        draggingButton = PointerEventData.InputButton.Left;
+                        isDragging = true;
+                    }
+                    // 右クリックで終了位置を設定
+                    else if (eventData.button == PointerEventData.InputButton.Right)
+                    {
+                        selectionEndRatio = ratio;
+                        draggingButton = PointerEventData.InputButton.Right;
+                        isDragging = true;
+                    }
                     UpdateSelectionUI();
                 })
                 .AddTo(this);
 
+            // ドラッグ中
             trigger.OnDragAsObservable()
                 .Where(_ => isDragging)
                 .Subscribe(eventData => {
                     RectTransformUtility.ScreenPointToLocalPointInRectangle(waveformImage.rectTransform, eventData.position, eventData.pressEventCamera, out Vector2 localPoint);
                     float ratio = Mathf.Clamp01((localPoint.x + waveformImage.rectTransform.rect.width / 2f) / waveformImage.rectTransform.rect.width);
-                    selectionEndRatio = ratio;
+
+                    if(draggingButton == PointerEventData.InputButton.Left)
+                    {
+                        selectionStartRatio = ratio;
+                    }
+                    else if (draggingButton == PointerEventData.InputButton.Right)
+                    {
+                        selectionEndRatio = ratio;
+                    }
+
                     UpdateSelectionUI();
                 })
                 .AddTo(this);
@@ -122,8 +156,34 @@ namespace NoteMaker.Presenter.AudioCutter
             if (clip != null && rangeText != null)
             {
                 float length = clip.length;
-                rangeText.text = $"Selected: {minRatio * length:F2}s - {maxRatio * length:F2}s";
+                rangeText.text = $"{minRatio * length:F2} - {maxRatio * length:F2}";
             }
+
+            GenerateWaveformTexture();
+        }
+
+        public void SamplePlay()
+        {
+                var clip = Audio.Source.clip;
+                if (clip == null) return;
+    
+                float minRatio = Mathf.Min(selectionStartRatio, selectionEndRatio);
+                float maxRatio = Mathf.Max(selectionStartRatio, selectionEndRatio);
+    
+                float startTime = minRatio * clip.length;
+                float endTime = maxRatio * clip.length;
+    
+                Audio.Source.time = startTime;
+                Audio.Source.Play();
+    
+                // 選択範囲の終了時間で停止するコルーチンを開始
+                StartCoroutine(StopAfterDelay(endTime - startTime));
+        }
+
+        private IEnumerator StopAfterDelay(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            Audio.Source.Stop();
         }
 
         private void GenerateWaveformTexture()
@@ -133,6 +193,7 @@ namespace NoteMaker.Presenter.AudioCutter
 
             Texture2D tex = new Texture2D(textureWidth, textureHeight, TextureFormat.RGBA32, false);
             Color[] pixels = new Color[textureWidth * textureHeight];
+
             // 背景クリア
             for (int i = 0; i < pixels.Length; i++) pixels[i] = new Color(0, 0, 0, 0.5f);
 
@@ -167,9 +228,28 @@ namespace NoteMaker.Presenter.AudioCutter
                 }
             }
 
+            DrawSelectionLines(pixels);
+
             tex.SetPixels(pixels);
             tex.Apply();
             waveformImage.texture = tex;
+        }
+
+        private void DrawSelectionLines(Color[] pixels)
+        {
+            float minRatio = Mathf.Min(selectionStartRatio, selectionEndRatio);
+            float maxRatio = Mathf.Max(selectionStartRatio, selectionEndRatio);
+
+            int xStart = Mathf.RoundToInt(minRatio * textureWidth);
+            int xEnd = Mathf.RoundToInt(maxRatio * textureWidth);
+
+            Color lineColor = Color.mediumVioletRed;
+
+            for (int y = 0; y < textureHeight; y++)
+                pixels[y * textureWidth + Mathf.Clamp(xStart, 0, textureWidth - 1)] = lineColor;
+
+            for (int y = 0; y < textureHeight; y++)
+                pixels[y * textureWidth + Mathf.Clamp(xEnd, 0, textureWidth - 1)] = lineColor;
         }
 
         private void SaveSample()
@@ -198,7 +278,7 @@ namespace NoteMaker.Presenter.AudioCutter
                 return;
             }
 
-            string savePath = Path.Combine(workSpace, "Sample.wav");
+            string savePath = Path.Combine(workSpace, "Notes", EditData.Name.Value, "Sample.wav");
 
             // 書き出し実行
             WavUtility.Save(savePath, clip, startSample, lengthSamples);
