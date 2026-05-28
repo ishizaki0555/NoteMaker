@@ -168,14 +168,61 @@ namespace NoteMaker.Presenter.AudioCutter
             waveformTex.Apply();
         }
 
+        [System.Serializable]
+        private class AudioCutterSettings
+        {
+            public float startRatio;
+            public float endRatio;
+        }
+
+        private string GetSettingsFilePath()
+        {
+            string workSpace = Settings.WorkSpacePath.Value;
+            if (string.IsNullOrEmpty(workSpace)) return null;
+            return Path.Combine(workSpace, "Notes", EditData.Name.Value, "SampleSettings.json");
+        }
+
+        private void SaveSettings()
+        {
+            string path = GetSettingsFilePath();
+            if (string.IsNullOrEmpty(path)) return;
+
+            var settings = new AudioCutterSettings
+            {
+                startRatio = Mathf.Min(selectionStartRatio, selectionEndRatio),
+                endRatio = Mathf.Max(selectionStartRatio, selectionEndRatio)
+            };
+            File.WriteAllText(path, UnityEngine.JsonUtility.ToJson(settings));
+        }
+
+        private void LoadSettings()
+        {
+            string path = GetSettingsFilePath();
+            if (!string.IsNullOrEmpty(path) && File.Exists(path))
+            {
+                var json = File.ReadAllText(path);
+                var settings = UnityEngine.JsonUtility.FromJson<AudioCutterSettings>(json);
+                selectionStartRatio = settings.startRatio;
+                selectionEndRatio = settings.endRatio;
+                if (selectionStartRatio == 0f && selectionEndRatio == 0f)
+                {
+                    selectionEndRatio = 1f;
+                }
+            }
+            else
+            {
+                selectionStartRatio = 0f;
+                selectionEndRatio = 1f;
+            }
+        }
+
         /// <summary>
         /// オーディオカッターウィンドウを開きます。（外部のボタン等から呼ばれることを想定）
         /// </summary>
         public void OpenWindow()
         {
             windowRoot.SetActive(true);
-            selectionStartRatio = 0f;
-            selectionEndRatio = 1f;
+            LoadSettings();
             
             if (previewSource != null && Audio.Source != null)
             {
@@ -270,13 +317,24 @@ namespace NoteMaker.Presenter.AudioCutter
 
             // 選択時間の表示
             var clip = Audio.Source.clip;
-            if (clip != null && rangeText != null)
+            if(clip != null && rangeText != null)
             {
                 float length = clip.length;
-                rangeText.text = $"{minRatio * length:F2} - {maxRatio * length:F2}";
+                float startTime = minRatio * length;
+                float endTime = maxRatio * length;
+
+                rangeText.text = $"{FormatTime(startTime)} - {FormatTime(endTime)}";
             }
 
             GenerateWaveformTexture();
+        }
+
+        private string FormatTime(float time)
+        {
+            int tortalSecond = Mathf.FloorToInt(time);
+            int minutes = tortalSecond / 60;
+            int seconds = tortalSecond % 60;
+            return $"{minutes:00} : {seconds:00}";
         }
 
         private void GenerateWaveformTexture()
@@ -380,6 +438,9 @@ namespace NoteMaker.Presenter.AudioCutter
             // 書き出し実行
             WavUtility.Save(savePath, clip, startSample, lengthSamples);
             
+            // JSONに設定を保存
+            SaveSettings();
+
             // 完了したらウィンドウを閉じる
             CloseWindow();
         }
