@@ -5740,10 +5740,10 @@ RectTransform:
   - {fileID: 1867170518}
   m_Father: {fileID: 128994624}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 501.0071, y: -112.049995}
+  m_SizeDelta: {x: 322.8, y: 74.7}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &448860044
 GameObject:
@@ -9035,10 +9035,10 @@ RectTransform:
   - {fileID: 253438163}
   m_Father: {fileID: 128994624}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 161.70712, y: -112.049995}
+  m_SizeDelta: {x: 322.8, y: 74.7}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &801749470
 GameObject:
@@ -9443,7 +9443,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &854035761
 RectTransform:
   m_ObjectHideFlags: 0
@@ -18508,10 +18508,10 @@ RectTransform:
   - {fileID: 2011551752}
   m_Father: {fileID: 128994624}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 161.70712, y: -37.35}
+  m_SizeDelta: {x: 322.8, y: 74.7}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1722660745
 GameObject:
@@ -20733,10 +20733,10 @@ RectTransform:
   - {fileID: 1610794925}
   m_Father: {fileID: 128994624}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 501.0071, y: -37.35}
+  m_SizeDelta: {x: 322.8, y: 74.7}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &2011551751
 GameObject:

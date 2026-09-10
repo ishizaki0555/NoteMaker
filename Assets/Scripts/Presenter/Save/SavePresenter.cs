@@ -1,4 +1,4 @@
-﻿// ========================================
+// ========================================
 //
 // NoteMaker Project
 //
@@ -173,13 +173,12 @@ namespace NoteMaker.Presenter
                 Directory.CreateDirectory(musicFolder);
 
             //===============================
-            // 譜面 JSON 保存
+            // 譜面 JSON 保存 (Note.json)
             //===============================
-            var jsonFileName = $"{difficultyName}.json";
+            var jsonFileName = "Note.json";
             var jsonPath = Path.Combine(musicFolder, jsonFileName);
 
-            var json = EditDataSerializer.Serialize();
-            File.WriteAllText(jsonPath, json, System.Text.Encoding.UTF8);
+            EditDataSerializer.SaveNoteContainer(jsonPath, difficultyName);
 
             //===============================
             // 楽曲ファイルのコピー（music.xxx）

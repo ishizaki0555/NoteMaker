@@ -29,10 +29,9 @@ namespace NoteMaker.Model
     public class EditDataSerializer
     {
         /// <summary>
-        /// 現在の EditData を MusicDTO.EditData に変換し、JSON 文字列として返します。
-        /// ノートはサンプル位置順に並び替え、Long ノーツは子ノーツを連結して保存します。
+        /// 現在の EditData を MusicDTO.EditData に変換して返します。
         /// </summary>
-        public static string Serialize()
+        public static MusicDTO.EditData SerializeDTO()
         {
             var dto = new MusicDTO.EditData();
             dto.BPM = EditData.BPM.Value;
@@ -78,16 +77,68 @@ namespace NoteMaker.Model
                 }
             }
 
+            return dto;
+        }
+
+        /// <summary>
+        /// 現在の EditData を MusicDTO.EditData に変換し、JSON 文字列として返します。
+        /// </summary>
+        public static string Serialize()
+        {
+            var dto = SerializeDTO();
             return UnityEngine.JsonUtility.ToJson(dto);
         }
 
         /// <summary>
-        /// JSON 文字列を MusicDTO.EditData に復元し、EditData に反映します。
-        /// Long ノーツは連結情報（prev / next）を復元して構築します。
+        /// Note.json に指定された難易度の譜面データを追加・更新して保存します。
         /// </summary>
-        public static void Deserialize(string json)
+        public static void SaveNoteContainer(string jsonPath, string difficultyName)
         {
-            var editData = UnityEngine.JsonUtility.FromJson<MusicDTO.EditData>(json);
+            MusicDTO.NoteContainer container = null;
+            if (File.Exists(jsonPath))
+            {
+                try
+                {
+                    var jsonText = File.ReadAllText(jsonPath, System.Text.Encoding.UTF8);
+                    container = UnityEngine.JsonUtility.FromJson<MusicDTO.NoteContainer>(jsonText);
+                }
+                catch
+                {
+                    container = null;
+                }
+            }
+
+            if (container == null || container.difficulties == null)
+            {
+                container = new MusicDTO.NoteContainer();
+                container.difficulties = new List<MusicDTO.DifficultyData>();
+            }
+
+            var currentEditData = SerializeDTO();
+            var target = container.difficulties.Find(d => d.difficulty == difficultyName);
+            if (target != null)
+            {
+                target.data = currentEditData;
+            }
+            else
+            {
+                container.difficulties.Add(new MusicDTO.DifficultyData
+                {
+                    difficulty = difficultyName,
+                    data = currentEditData
+                });
+            }
+
+            var json = UnityEngine.JsonUtility.ToJson(container, false);
+            File.WriteAllText(jsonPath, json, System.Text.Encoding.UTF8);
+        }
+
+        /// <summary>
+        /// MusicDTO.EditData を EditData に反映します。
+        /// </summary>
+        public static void DeserializeDTO(MusicDTO.EditData editData)
+        {
+            if (editData == null) return;
             var notePresenter = EditNotesPresenter.Instance;
 
             // 楽曲設定を反映
@@ -105,33 +156,86 @@ namespace NoteMaker.Model
             }
 
             // ノート復元
-            foreach (var note in editData.notes)
+            if (editData.notes != null)
             {
-                if (note.type == 1)
+                foreach (var note in editData.notes)
                 {
-                    // 単ノーツ
-                    notePresenter.AddNote(ToNoteObject(note));
-                    continue;
-                }
-
-                // Long ノーツ（親 → 子 の順に復元）
-                var longNoteObjects = new[] { note }.Concat(note.notes)
-                    .Select(note_ =>
+                    if (note.type == 1)
                     {
-                        notePresenter.AddNote(ToNoteObject(note_));
-                        return EditData.Notes[ToNoteObject(note_).position];
-                    })
-                    .ToList();
+                        // 単ノーツ
+                        notePresenter.AddNote(ToNoteObject(note));
+                        continue;
+                    }
 
-                // prev / next を連結
-                for (int i = 1; i < longNoteObjects.Count; i++)
-                {
-                    longNoteObjects[i].note.prev = longNoteObjects[i - 1].note.position;
-                    longNoteObjects[i - 1].note.next = longNoteObjects[i].note.position;
+                    // Long ノーツ（親 → 子 の順に復元）
+                    var longNoteObjects = new[] { note }.Concat(note.notes ?? new List<MusicDTO.Note>())
+                        .Select(note_ =>
+                        {
+                            notePresenter.AddNote(ToNoteObject(note_));
+                            return EditData.Notes[ToNoteObject(note_).position];
+                        })
+                        .ToList();
+
+                    // prev / next を連結
+                    for (int i = 1; i < longNoteObjects.Count; i++)
+                    {
+                        longNoteObjects[i].note.prev = longNoteObjects[i - 1].note.position;
+                        longNoteObjects[i - 1].note.next = longNoteObjects[i].note.position;
+                    }
+
+                    EditState.LongNoteTailPosition.Value = NotePosition.None;
                 }
-
-                EditState.LongNoteTailPosition.Value = NotePosition.None;
             }
+        }
+
+        /// <summary>
+        /// Note.json の JSON 文字列から指定した難易度の譜面データを復元します。
+        /// </summary>
+        public static bool DeserializeFromContainer(string json, string difficultyName)
+        {
+            if (string.IsNullOrEmpty(json)) return false;
+
+            try
+            {
+                var container = UnityEngine.JsonUtility.FromJson<MusicDTO.NoteContainer>(json);
+                if (container != null && container.difficulties != null && container.difficulties.Count > 0)
+                {
+                    var target = container.difficulties.Find(d => d.difficulty == difficultyName);
+                    if (target != null && target.data != null)
+                    {
+                        DeserializeDTO(target.data);
+                        return true;
+                    }
+                }
+            }
+            catch
+            {
+            }
+
+            // フォールバック: 旧単一EditData形式の場合
+            try
+            {
+                var singleEditData = UnityEngine.JsonUtility.FromJson<MusicDTO.EditData>(json);
+                if (singleEditData != null && !string.IsNullOrEmpty(singleEditData.name))
+                {
+                    DeserializeDTO(singleEditData);
+                    return true;
+                }
+            }
+            catch
+            {
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// JSON 文字列を MusicDTO.EditData に復元し、EditData に反映します。
+        /// </summary>
+        public static void Deserialize(string json)
+        {
+            var editData = UnityEngine.JsonUtility.FromJson<MusicDTO.EditData>(json);
+            DeserializeDTO(editData);
         }
 
         /// <summary>

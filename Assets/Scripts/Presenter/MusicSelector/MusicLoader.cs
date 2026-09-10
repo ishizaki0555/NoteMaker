@@ -91,26 +91,34 @@ namespace NoteMaker.Presenter
         /// </summary>
         void LoadEditData(string difficultyName)
         {
-            // 楽曲名からNotes/曲名/難易度名.json のパスを生成し、存在する場合は読み込んでEditDataに反映します
             var musicName = Path.GetFileNameWithoutExtension(EditData.Name.Value);
             var notesRoot = Path.Combine(Path.GetDirectoryName(MusicSelector.DirectoryPath.Value), "Notes");
             var musicFolder = Path.Combine(notesRoot, musicName);
 
-            // 譜面ファイルのパスを生成
-            var jsonPath = Path.Combine(musicFolder, $"{difficultyName}.json");
+            var noteJsonPath = Path.Combine(musicFolder, "Note.json");
+            var legacyJsonPath = Path.Combine(musicFolder, $"{difficultyName}.json");
 
-            // JSONファイルが存在する場合は読み込んでEditDataに反映します。存在しない場合はエラーログを出力します
-            if (File.Exists(jsonPath))
+            // 1. Note.json から読み込み
+            if (File.Exists(noteJsonPath))
             {
-                var json = File.ReadAllText(jsonPath, System.Text.Encoding.UTF8);
+                var json = File.ReadAllText(noteJsonPath, System.Text.Encoding.UTF8);
+                if (EditDataSerializer.DeserializeFromContainer(json, difficultyName))
+                {
+                    return;
+                }
+            }
+
+            // 2. フォールバック: 旧個別ファイル ({difficultyName}.json) から読み込み
+            if (File.Exists(legacyJsonPath))
+            {
+                var json = File.ReadAllText(legacyJsonPath, System.Text.Encoding.UTF8);
                 EditDataSerializer.Deserialize(json);
+                return;
             }
-            else
-            {
+
 #if ENABLE_UNITYEVENTS
-                Debug.LogError($"該当の難易度が見つかりませんでした。{difficultyName}, {jsonPath}");
+            Debug.LogError($"該当の難易度が見つかりませんでした。{difficultyName}, {noteJsonPath}");
 #endif
-            }
         }
 
         /// <summary>

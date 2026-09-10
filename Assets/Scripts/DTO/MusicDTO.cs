@@ -21,6 +21,26 @@ namespace NoteMaker.DTO
     public class MusicDTO
     {
         /// <summary>
+        /// Note.json 全体のルートデータ構造です。
+        /// 複数難易度の譜面データを保持します。
+        /// </summary>
+        [System.Serializable]
+        public class NoteContainer
+        {
+            public List<DifficultyData> difficulties = new List<DifficultyData>();
+        }
+
+        /// <summary>
+        /// 難易度名と該当難易度の譜面データを紐付けるラッパー構造体です。
+        /// </summary>
+        [System.Serializable]
+        public class DifficultyData
+        {
+            public string difficulty; // 難易度名（"Easy", "Normal" など）
+            public EditData data;     // その難易度の譜面データ
+        }
+
+        /// <summary>
         /// 楽曲編集に必要なメタ情報とノーツ情報を保持するデータ構造です。
         /// </summary>
         [System.Serializable]

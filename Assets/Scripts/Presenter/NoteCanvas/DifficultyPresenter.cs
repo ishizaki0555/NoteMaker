@@ -5,9 +5,9 @@
 // ========================================
 //
 // DifficultyPresenter.cs
-// “ïˆÕ“xiDifficultyNamej‚Ì‘I‘ğ‚ÆA‘Î‰‚·‚é•ˆ–Êƒf[ƒ^iJSONj‚Ì“Ç‚İ‚İ‚ğŠÇ—‚·‚é
-// ƒvƒŒƒ[ƒ“ƒ^[‚Å‚·BDropdown ‚Ì•ÏX‚ğ Undo/Redo ‘Î‰‚Åˆµ‚¢A
-// ‘I‘ğ‚³‚ê‚½“ïˆÕ“x‚Ì•ˆ–Ê‚ğ EditData ‚É”½‰f‚µ‚Ü‚·B
+// é›£æ˜“åº¦ï¼ˆDifficultyNameï¼‰ã®é¸æŠã¨ã€å¯¾å¿œã™ã‚‹è­œé¢ãƒ‡ãƒ¼ã‚¿ï¼ˆJSONï¼‰ã®èª­ã¿è¾¼ã¿ã‚’ç®¡ç†ã™ã‚‹
+// ãƒ—ãƒ¬ã‚¼ãƒ³ã‚¿ãƒ¼ã§ã™ã€‚Dropdown ã®å¤‰æ›´ã‚’ Undo/Redo å¯¾å¿œã§æ‰±ã„ã€
+// é¸æŠã•ã‚ŒãŸé›£æ˜“åº¦ã®è­œé¢ã‚’ EditData ã«åæ˜ ã—ã¾ã™ã€‚
 //
 //========================================
 
@@ -21,45 +21,45 @@ using UnityEngine.UI;
 namespace NoteMaker.Presenter
 {
     /// <summary>
-    /// “ïˆÕ“x‘I‘ğ UIiDropdownj‚Æ EditData.DifficultyName ‚ğ“¯Šú‚³‚¹‚éƒNƒ‰ƒX‚Å‚·B
-    /// EDropdown ‚Ì•ÏX‚ğ Undo/Redo ‘Î‰‚Å”½‰f  
-    /// E“ïˆÕ“x‚²‚Æ‚Ì JSON ‚ğ“Ç‚İ‚İA•ˆ–Êƒf[ƒ^‚ğXV  
-    /// EŠY“–“ïˆÕ“x‚Ì JSON ‚ª–³‚¢ê‡‚Í‹óƒf[ƒ^‚ğ¶¬  
+    /// é›£æ˜“åº¦é¸æŠ UIï¼ˆDropdownï¼‰ã¨ EditData.DifficultyName ã‚’åŒæœŸã•ã›ã‚‹ã‚¯ãƒ©ã‚¹ã§ã™ã€‚
+    /// ãƒ»Dropdown ã®å¤‰æ›´ã‚’ Undo/Redo å¯¾å¿œã§åæ˜   
+    /// ãƒ»é›£æ˜“åº¦ã”ã¨ã® JSON ã‚’èª­ã¿è¾¼ã¿ã€è­œé¢ãƒ‡ãƒ¼ã‚¿ã‚’æ›´æ–°  
+    /// ãƒ»è©²å½“é›£æ˜“åº¦ã® JSON ãŒç„¡ã„å ´åˆã¯ç©ºãƒ‡ãƒ¼ã‚¿ã‚’ç”Ÿæˆ  
     /// </summary>
     public class DifficultyPresenter : MonoBehaviour
     {
-        [SerializeField] Dropdown dropdown = default; // “ïˆÕ“x‘I‘ğ UI
+        [SerializeField] Dropdown dropdown = default; // é›£æ˜“åº¦é¸æŠ UI
 
         void Awake()
         {
             var difficultyName = EditData.DifficultyName;
 
             //===============================
-            // Dropdown ¨ DifficultyNameiUndo/Redo ‘Î‰j
+            // Dropdown â†’ DifficultyNameï¼ˆUndo/Redo å¯¾å¿œï¼‰
             //===============================
             dropdown.onValueChanged.AsObservable()
                 .Subscribe(index =>
                 {
                     var name = dropdown.options[index].text;
 
-                    // “ïˆÕ“x‚ğ•ÏX‚·‚éƒRƒ}ƒ“ƒh‚ğì¬‚µAUndo/Redo‚É‘Î‰‚³‚¹‚é
+                    // é›£æ˜“åº¦ã‚’å¤‰æ›´ã™ã‚‹ã‚³ãƒãƒ³ãƒ‰ã‚’ä½œæˆã—ã€Undo/Redoã«å¯¾å¿œã•ã›ã‚‹
                     EditCommandManager.Do(
                         new Command(
                             () =>
                             {
-                                // Do‚Í‘I‘ğ‚³‚ê‚½“ïˆÕ“x‚ğ”½‰f
+                                // Doæ™‚ã¯é¸æŠã•ã‚ŒãŸé›£æ˜“åº¦ã‚’åæ˜ 
                                 difficultyName.Value = name;
                                 LoadDifficultyChart(name);
                             },
                             () =>
                             {
-                                // Undo ‚Í‘O‚Ì’l‚É–ß‚·
+                                // Undo æ™‚ã¯å‰ã®å€¤ã«æˆ»ã™
                                 difficultyName.Value = difficultyName.Value;
                                 LoadDifficultyChart(name);
                             },
                             () =>
                             {
-                                // Redo ‚ÍÄ“x‚±‚Ì“ïˆÕ“x‚ğ“Ç‚İ‚Ş
+                                // Redo æ™‚ã¯å†åº¦ã“ã®é›£æ˜“åº¦ã‚’èª­ã¿è¾¼ã‚€
                                 difficultyName.Value = name;
                                 LoadDifficultyChart(name);
                             }
@@ -69,41 +69,43 @@ namespace NoteMaker.Presenter
         }
 
         /// <summary>
-        /// ‘I‘ğ‚³‚ê‚½“ïˆÕ“x‚Ì JSON ‚ğ“Ç‚İ‚İAEditData ‚É”½‰f‚µ‚Ü‚·B
+        /// é¸æŠã•ã‚ŒãŸé›£æ˜“åº¦ã® JSON ã‚’èª­ã¿è¾¼ã¿ã€EditData ã«åæ˜ ã—ã¾ã™ã€‚
         /// </summary>
         void LoadDifficultyChart(string difficultyName)
         {
-            // MusicSelector ‚Å‘I‘ğ‚³‚ê‚½‰¹Œ¹ƒtƒ@ƒCƒ‹–¼‚©‚çA•ˆ–Êƒf[ƒ^‚Ì•Û‘¶æ‚ğŒˆ’è‚µ‚Ü‚·B
             var musicName = Path.GetFileNameWithoutExtension(EditData.Name.Value);
 
-            // Notes/‹È–¼/“ïˆÕ“x.json ‚ÌƒpƒX‚ğ\’z
             var notesRoot = Path.Combine(
                 Path.GetDirectoryName(MusicSelector.DirectoryPath.Value),
                 "Notes");
 
-            // Notes/‹È–¼/ ‚ÌƒtƒHƒ‹ƒ_‚ğì¬
             var musicFolder = Path.Combine(notesRoot, musicName);
 
-            // •ˆ–Êƒtƒ@ƒCƒ‹ƒpƒX
-            var jsonPath = Path.Combine(musicFolder, $"{difficultyName}.json");
+            var noteJsonPath = Path.Combine(musicFolder, "Note.json");
+            var legacyJsonPath = Path.Combine(musicFolder, $"{difficultyName}.json");
 
-            // JSON‚ª‘¶İ‚·‚éê‡‚Í“Ç‚İ‚ñ‚ÅEditData‚É”½‰f
-            if (File.Exists(jsonPath))
+            ClearEditData();
+
+            // 1. Note.json ã‹ã‚‰è©²å½“é›£æ˜“åº¦ã®è­œé¢ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿è¾¼ã¿
+            if (File.Exists(noteJsonPath))
             {
-                EditData.Notes.Clear();
-                var json = File.ReadAllText(jsonPath);
-                EditDataSerializer.Deserialize(json);
+                var json = File.ReadAllText(noteJsonPath, System.Text.Encoding.UTF8);
+                if (EditDataSerializer.DeserializeFromContainer(json, difficultyName))
+                {
+                    return;
+                }
             }
-            // ‘¶İ‚µ‚È‚¢ê‡‚Í‚©‚çƒf[ƒ^‚ğì¬
-            else
+
+            // 2. ãƒ•ã‚©ãƒ¼ãƒ«ãƒãƒƒã‚¯: æ—§å€‹åˆ¥ãƒ•ã‚¡ã‚¤ãƒ« ({difficultyName}.json) ã‹ã‚‰èª­ã¿è¾¼ã¿
+            if (File.Exists(legacyJsonPath))
             {
-                // ŠY“–“ïˆÕ“x‚ª‘¶İ‚µ‚È‚¢ê‡‚Í‹óƒf[ƒ^‚ğì¬
-                ClearEditData();
+                var json = File.ReadAllText(legacyJsonPath, System.Text.Encoding.UTF8);
+                EditDataSerializer.Deserialize(json);
             }
         }
 
         /// <summary>
-        /// •ˆ–Êƒf[ƒ^‚ğ‰Šúó‘Ô‚ÉƒŠƒZƒbƒg‚µ‚Ü‚·B
+        /// è­œé¢ãƒ‡ãƒ¼ã‚¿ã‚’åˆæœŸçŠ¶æ…‹ã«ãƒªã‚»ãƒƒãƒˆã—ã¾ã™ã€‚
         /// </summary>
         void ClearEditData()
         {
