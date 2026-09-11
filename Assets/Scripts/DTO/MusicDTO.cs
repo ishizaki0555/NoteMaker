@@ -27,6 +27,8 @@ namespace NoteMaker.DTO
         [System.Serializable]
         public class NoteContainer
         {
+            public string arttistName;      // 作曲者名
+            public int[] difficultyLevel;   // 難易度レベル
             public List<DifficultyData> difficulties = new List<DifficultyData>();
         }
 
@@ -36,8 +38,8 @@ namespace NoteMaker.DTO
         [System.Serializable]
         public class DifficultyData
         {
-            public string difficulty; // 難易度名（"Easy", "Normal" など）
-            public EditData data;     // その難易度の譜面データ
+            public string difficulty;       // 難易度名（"Easy", "Normal" など）
+            public EditData data;           // その難易度の譜面データ
         }
 
         /// <summary>
