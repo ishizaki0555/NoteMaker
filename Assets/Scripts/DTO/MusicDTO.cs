@@ -27,7 +27,7 @@ namespace NoteMaker.DTO
         [System.Serializable]
         public class NoteContainer
         {
-            public string arttistName;      // 作曲者名
+            public string artistName;      // 作曲者名
             public int[] difficultyLevel;   // 難易度レベル
             public List<DifficultyData> difficulties = new List<DifficultyData>();
         }

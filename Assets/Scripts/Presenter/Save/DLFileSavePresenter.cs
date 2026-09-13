@@ -16,7 +16,6 @@ using UniRx;
 using System.IO;
 using NoteMaker.DTO;
 using NoteMaker.Model;
-using System.Linq;
 
 public class DLFileSavePresenter : MonoBehaviour
 {
@@ -84,12 +83,28 @@ public class DLFileSavePresenter : MonoBehaviour
 
         // 作者名を取得
         string artist = arttistNameField.text;
+        notesContainer.artistName = artist;
 
-        // 各難易度に情報を書き込む
-        for(int i = 0; i < notesContainer.difficultyLevel.Length; i++)
+        if (notesContainer.difficultyLevel == null || notesContainer.difficultyLevel.Length != difficultyLevels.Length)
         {
-
+            notesContainer.difficultyLevel = new int[difficultyLevels.Length];
         }
+
+        for (int i = 0; i < difficultyLevels.Length; i++)
+        {
+            if (int.TryParse(difficultyLevels[i].text, out int level))
+            {
+                notesContainer.difficultyLevel[i] = level;
+            }
+            else
+            {
+                notesContainer.difficultyLevel[i] = 0;
+            }
+        }
+
+        var outPutJson = JsonUtility.ToJson(notesContainer, false);
+        File.WriteAllText(jsonPath, outPutJson, System.Text.Encoding.UTF8);
+        CloseWindow();
     }
 
     /// <summary>
@@ -97,7 +112,47 @@ public class DLFileSavePresenter : MonoBehaviour
     /// </summary>
     private void OpenWindow()
     {
-        DLWriteWindow.SetActive(true);          // ウィンドウを表示する
+        DLWriteWindow.SetActive(true);
+
+        if (EditData.Name != null && !string.IsNullOrEmpty(EditData.Name.Value) && MusicSelector.DirectoryPath != null && !string.IsNullOrEmpty(MusicSelector.DirectoryPath.Value))
+        {
+            var musicName = Path.GetFileNameWithoutExtension(EditData.Name.Value);
+            var notesRoot = Path.Combine(
+                Path.GetDirectoryName(MusicSelector.DirectoryPath.Value),
+                "Notes"
+            );
+            var musicFolder = Path.Combine(notesRoot, musicName);
+            var jsonPath = Path.Combine(musicFolder, "Note.json");
+
+            if (File.Exists(jsonPath))
+            {
+                try
+                {
+                    var json = File.ReadAllText(jsonPath, System.Text.Encoding.UTF8);
+                    var container = JsonUtility.FromJson<MusicDTO.NoteContainer>(json);
+                    if (container != null)
+                    {
+                        if (arttistNameField != null && !string.IsNullOrEmpty(container.artistName))
+                        {
+                            arttistNameField.text = container.artistName;
+                        }
+                        if (container.difficultyLevel != null && difficultyLevels != null)
+                        {
+                            for (int i = 0; i < difficultyLevels.Length && i < container.difficultyLevel.Length; i++)
+                            {
+                                if (difficultyLevels[i] != null)
+                                {
+                                    difficultyLevels[i].text = container.difficultyLevel[i].ToString();
+                                }
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                }
+            }
+        }
     }
 
     /// <summary>
