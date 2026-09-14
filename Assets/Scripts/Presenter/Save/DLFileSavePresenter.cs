@@ -204,9 +204,21 @@ public class DLFileSavePresenter : MonoBehaviour
                 }
                 catch
                 {
+                    // Note.jsonの読み込みに失敗した場合はエラーログを出力する
 #if UNITY_EDITOR
                     Debug.LogError($"Note.json の読み込みに失敗しました: {jsonPath}");
 #endif
+                    // Note.jsonの内容が不正な場合は、UIを空にする
+                    arttistNameField.text = string.Empty;
+                    titleField.text = string.Empty;
+                    creatorNameField.text = string.Empty;
+                    for (int i = 0; i < difficultyLevels.Length; i++)
+                    {
+                        if (difficultyLevels[i] != null)
+                        {
+                            difficultyLevels[i].text = string.Empty;
+                        }
+                    }
                 }
             }
         }
