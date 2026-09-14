@@ -15,7 +15,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using NoteMaker.Model;
-using NoteMaker.DTO;
 
 namespace NoteMaker.Utility
 {

@@ -13,7 +13,6 @@
 //========================================
 
 using NoteMaker.Model;
-using NoteMaker.DTO;
 using NoteMaker.Notes;
 using UnityEngine;
 

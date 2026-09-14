@@ -1,3 +1,15 @@
+// ========================================
+//
+// NoteMaker Project
+//
+// ========================================
+//
+// AudioCutterWindowPresenter.cs
+//
+// 音声切り抜き（サンプリング）用ウィンドウの制御を行う Presenter クラスです。
+//
+//========================================
+
 using NoteMaker.Model;
 using NoteMaker.Utility;
 using System.IO;
