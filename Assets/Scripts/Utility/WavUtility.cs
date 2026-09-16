@@ -28,7 +28,7 @@ namespace NoteMaker.Utility
         /// <param name="clip">元のAudioClip</param>
         /// <param name="startSample">切り抜き開始サンプル</param>
         /// <param name="lengthSamples">切り抜くサンプル数</param>
-        public static void Save(string filepath, AudioClip clip, int startSample, int lengthSamples)
+        public static void Save(string filepath, AudioClip clip, int startSample, int lengthSamples, float volume)
         {
             if (clip == null)
             {
@@ -55,6 +55,12 @@ namespace NoteMaker.Utility
             // 指定範囲の音声データを取得
             float[] samples = new float[lengthSamples * channels];
             clip.GetData(samples, startSample);
+
+            // 音量調節
+            for(int i = 0; i < samples.Length; i++)
+            {
+                samples[i] *= volume;
+            }
 
             using (var fileStream = new FileStream(filepath, FileMode.Create))
             using (var writer = new BinaryWriter(fileStream))

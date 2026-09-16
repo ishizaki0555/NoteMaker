@@ -58,7 +58,7 @@ namespace NoteMaker.Presenter.AudioCutter
         /// <summary>
         /// 初期化処理
         /// </summary>
-        private void Start()
+        private void Awake()
         {
             // 初期状態は非表示
             windowRoot.SetActive(false);
@@ -71,6 +71,20 @@ namespace NoteMaker.Presenter.AudioCutter
             openButton.onClick.AsObservable()
                 .Subscribe(_ => OpenWindow())
                 .AddTo(this);
+
+            // 音量スライダーの値が変化したらプレビュー音量を更新
+            if(volumeSlider != null)
+            {
+                volumeSlider.onValueChanged.AsObservable()
+                    .Subscribe(value =>
+                    {
+                        if(previewSource != null)
+                        {
+                            previewSource.volume = value;
+                        }
+                    })
+                    .AddTo(this);
+            }
 
             // ✕ボタンで閉じる
             closeButton.onClick.AsObservable()
@@ -492,36 +506,49 @@ namespace NoteMaker.Presenter.AudioCutter
                 pixels[y * textureWidth + Mathf.Clamp(xEnd, 0, textureWidth - 1)] = lineColor;
         }
 
+        /// <summary>
+        /// 選択範囲のサンプルを切り抜いてWAVファイルとして保存します。
+        /// </summary>
         private void SaveSample()
         {
+            // AudioClipが設定されていない場合は保存しない
             var clip = Audio.Source.clip;
             if (clip == null) return;
 
+            // 選択範囲の開始位置と終了位置をサンプル数に変換
             float minRatio = Mathf.Min(selectionStartRatio, selectionEndRatio);
             float maxRatio = Mathf.Max(selectionStartRatio, selectionEndRatio);
 
+            // 選択範囲のサンプル数を計算
             int startSample = (int)(minRatio * clip.samples);
             int endSample = (int)(maxRatio * clip.samples);
             int lengthSamples = endSample - startSample;
 
+            // 選択範囲が無効な場合は保存しない
+#if UNITY_EDITOR
             if (lengthSamples <= 0)
             {
                 Debug.LogWarning("Selection length is 0.");
                 return;
             }
+#endif
 
             // 保存先パスの決定 (譜面と同じディレクトリに保存)
             string workSpace = Settings.WorkSpacePath.Value;
+#if UNITY_EDITOR
             if (string.IsNullOrEmpty(workSpace))
             {
                 Debug.LogError("Workspace path is not set.");
                 return;
             }
+#endif
 
             string savePath = Path.Combine(workSpace, "Notes", EditData.Name.Value, "Sample.wav");
 
+            float volume = volumeSlider != null ? volumeSlider.value : 1f;
+
             // 書き出し実行
-            WavUtility.Save(savePath, clip, startSample, lengthSamples);
+            WavUtility.Save(savePath, clip, startSample, lengthSamples, volume);
             
             // JSONに設定を保存
             SaveSettings();
